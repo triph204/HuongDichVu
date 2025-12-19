@@ -1,0 +1,85 @@
+@page
+@using WebAdmin.Controllers
+@{
+    Layout = null; /* Hoặc Layout = "_Layout" nếu bạn muốn dùng master page */
+}
+@model LoginViewModel
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Login - Restaurant Management</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    
+    <link rel="stylesheet" href="~/css/login.css" />
+</head>
+<body>
+
+    <div class="login-container">
+        
+        <div class="brand-side">
+            <div class="brand-bg-image"></div>
+            <div class="brand-content">
+                <span class="material-symbols-outlined" style="font-size: 64px; color: var(--primary-color);">
+                    restaurant_menu
+                </span>
+                <h2 class="brand-title">Restaurant Admin Portal</h2>
+                <p class="brand-subtitle">Manage your reservations, menus, and staff with ease.</p>
+                
+                <div class="brand-icons">
+                    <span class="material-symbols-outlined" style="font-size: 32px;">ramen_dining</span>
+                    <span class="material-symbols-outlined" style="font-size: 32px;">restaurant</span>
+                    <span class="material-symbols-outlined" style="font-size: 32px;">room_service</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-side">
+            <div class="form-wrapper">
+                <div class="form-header">
+                    <h1>Admin Login</h1>
+                    <p>Welcome back! Please enter your details.</p>
+                </div>
+
+                <form method="post" asp-action="Login" asp-controller="Dangnhap">
+                    <div class="input-group">
+                        <label class="input-label">Username</label>
+                        <input type="text" 
+                               class="form-control" 
+                               placeholder="e.g., admin@yourrestaurant.com" 
+                               name="username" />
+                    </div>
+
+                    <div class="input-group">
+                        <label class="input-label">Password</label>
+                        <div class="password-wrapper">
+                            <input type="password" 
+                                   class="form-control" 
+                                   placeholder="Enter your password" 
+                                   name="password" />
+                            <button class="toggle-password-btn" type="button" >
+                                <span class="material-symbols-outlined icon-visibility"></span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary">
+                        Log In
+                    </button>
+                    
+                    <a href="#" class="forgot-password">Forgot Password?</a>
+                </form>
+
+                <div class="footer-text">
+                    <p>© 2024 Your Restaurant Name. All Rights Reserved.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+        <script src="~/js/password_toggle.js" asp-append-version="true"></script>
+</body>
+</html>

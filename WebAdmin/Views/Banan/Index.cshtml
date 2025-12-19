@@ -1,0 +1,55 @@
+
+
+@model List<BanAnViewModel>
+@{
+    ViewData["Title"] = "Quản Lý Bàn Ăn";
+}
+
+<div class="card">
+    <div class="card-header d-flex justify-between align-center">
+        <h2>🪑 Danh Sách Bàn Ăn</h2>
+        <a href="/BanAn/Create" class="btn btn-secondary">+ Thêm Bàn</a>
+    </div>
+    <div class="card-body">
+        @if (Model.Any())
+        {
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Số Bàn</th>
+                            <th>Trạng Thái</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>Bàn @item.SoBan</td>
+                               
+                                <td>
+                                    <span class="badge @(item.TrangThai == "Trống" ? "badge-success" : "badge-warning")">
+                                        @item.TrangThai
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="/BanAn/Edit/@item.BanId" class="btn btn-primary btn-sm">Sửa</a>
+                                        <a href="/BanAn/Delete/@item.BanId" class="btn btn-danger btn-sm" onclick="return confirm('Xác nhận xóa?')">Xóa</a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="no-data">
+                <p>Chưa có bàn ăn nào</p>
+            </div>
+        }
+    </div>
+</div>

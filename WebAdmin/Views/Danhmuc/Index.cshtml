@@ -1,0 +1,51 @@
+
+
+@model List<DanhMucViewModel>
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Quản Lý Danh Mục";
+}
+
+<div class="card">
+    <div class="card-header d-flex justify-between align-center">
+        <h2>📂 Danh Sách Danh Mục</h2>
+        <a href="/DanhMuc/Create" class="btn btn-secondary">+ Thêm Danh Mục</a>
+    </div>
+    <div class="card-body">
+        @if (Model.Any())
+        {
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tên Danh Mục</th>
+                            <th>Mô Tả</th>
+                            <th>Hành Động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.TenDanhMuc</td>
+                                <td>@(string.IsNullOrEmpty(item.MoTa) ? "N/A" : item.MoTa)</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="/DanhMuc/Edit/@item.DanhMucId" class="btn btn-primary btn-sm">Sửa</a>
+                                        <a href="/DanhMuc/Delete/@item.DanhMucId" class="btn btn-danger btn-sm" onclick="return confirm('Xác nhận xóa?')">Xóa</a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="no-data">
+                <p>Chưa có danh mục nào</p>
+            </div>
+        }
+    </div>
+</div>

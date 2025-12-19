@@ -1,0 +1,145 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đơn Hàng</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="~/css/order.css">
+</head>
+<body>
+    <header class="header-top">
+        <div class="container">
+            <div class="header-wrapper py-3 d-flex justify-content-between align-items-center">
+
+                <!-- Table info -->
+                <div class="table-info d-flex align-items-center">
+                    <i class="fas fa-chair text-danger me-2"></i>
+                    <strong id="headerTableNumber" class="text-danger">--</strong>
+                </div>
+
+                <!-- Title -->
+                <h4 class="mb-0 text-danger text-center header-title">
+                    <i class="fas fa-receipt"></i> Đơn Hàng
+                </h4>
+
+                <!-- Back button -->
+                <a href="/" class="btn btn-outline-danger">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+            </div>
+        </div>
+    </header>
+
+
+    <!-- Orders Content -->
+    <main class="container my-4 pb-5">
+        <!-- Filter Tabs -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body p-0">
+                <div class="order-tabs">
+                    <button class="tab-btn active" data-status="all" onclick="filterOrders('all')">
+                        <i class="fas fa-list"></i>
+                        <span>Tất cả</span>
+                    </button>
+                    <button class="tab-btn" data-status="pending" onclick="filterOrders('pending')">
+                        <i class="fas fa-clock"></i>
+                        <span>Chờ xác nhận</span>
+                    </button>
+                    <button class="tab-btn" data-status="cooking" onclick="filterOrders('cooking')">
+                        <i class="fas fa-fire"></i>
+                        <span>Đang chuẩn bị</span>
+                    </button>
+                    <button class="tab-btn" data-status="completed" onclick="filterOrders('completed')">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Hoàn thành</span>
+                    </button>
+                    <button class="tab-btn" data-status="cancel" onclick="filterOrders('cancel')">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Đã Hủy</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Orders List -->
+        <div id="ordersContainer">
+            <div class="text-center py-5">
+                <div class="spinner-border text-danger" role="status">
+                    <span class="visually-hidden">Đang tải...</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container py-4">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5><i class="fas fa-utensils"></i> Nhà Hàng Ngon</h5>
+                    <p class="text-muted">Mang đến cho bạn những món ăn ngon nhất với chất lượng tốt nhất.</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Liên hệ</h5>
+                    <p class="text-muted mb-1"><i class="fas fa-phone"></i> 0123 456 789</p>
+                    <p class="text-muted mb-1"><i class="fas fa-envelope"></i> contact@nhahangngon.vn</p>
+                    <p class="text-muted"><i class="fas fa-map-marker-alt"></i> Hà Nội, Việt Nam</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Giờ mở cửa</h5>
+                    <p class="text-muted mb-1">Thứ 2 - Thứ 6: 8:00 - 22:00</p>
+                    <p class="text-muted">Thứ 7 - CN: 7:00 - 23:00</p>
+                </div>
+            </div>
+            <hr class="my-3">
+            <div class="text-center text-muted">
+                <p class="mb-0">© 2024 Nhà Hàng Ngon. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Mobile Bottom Nav -->
+    <nav class="mobile-nav">
+        <button class="nav-item" onclick="window.location.href='/'">
+            <i class="fas fa-home"></i>
+            <span>Thực đơn</span>
+        </button>
+        <button class="nav-item active" onclick="window.location.href='/Orders'">
+            <i class="fas fa-receipt"></i>
+            <span>Đơn hàng</span>
+        </button>
+    </nav>
+
+    <!-- Modal Chi Tiết Đơn Hàng -->
+    <div class="modal fade" id="orderDetailModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title">
+                        <i class="fas fa-receipt text-danger"></i>
+                        Chi tiết đơn hàng
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="orderDetailContent">
+                    <!-- Content will be populated by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SignalR Client Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    
+    <!-- Bootstrap JS (nếu chưa có) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Order.js với SignalR -->
+    <script src="~/js/order.js"></script>
+</body>
+</html>

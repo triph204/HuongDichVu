@@ -1,0 +1,378 @@
+@model List<DonHangViewModel>
+@{
+    ViewData["Title"] = "Quản Lý Đơn Hàng";
+
+    var sortBy = ViewBag.SortBy as string ?? "moinhat";
+    var trangThai = ViewBag.TrangThai as string ?? "tatca";
+    var currentPage = ViewBag.CurrentPage as int? ?? 1;
+    var totalPages = ViewBag.TotalPages as int? ?? 1;
+    var totalItems = ViewBag.TotalItems as int? ?? 0;
+
+    var startItem = (currentPage - 1) * 10 + 1;
+    var endItem = Math.Min(currentPage * 10, totalItems);
+    
+    // ✅ LẤY SỐ LƯỢNG TỪ VIEWBAG (ĐÃ ĐẾM SẴN TỪ CONTROLLER)
+    int totalAllOrders = ViewBag.TotalAllOrders ?? 0;
+    int countChoXacNhan = ViewBag.CountChoXacNhan ?? 0;
+    int countDangChuanBi = ViewBag.CountDangChuanBi ?? 0;
+    int countHoanThanh = ViewBag.CountHoanThanh ?? 0;
+    int countHuy = ViewBag.CountHuy ?? 0;
+}
+
+
+
+@removeTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.OptionTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<div class="card donhang-card">
+    <div class="card-header">
+        <h2>📋 Quản Lý Đơn Hàng</h2>
+    </div>
+
+    <!-- ✅ STATUS TABS -->
+<div class="status-tabs-container">
+    <div class="status-tabs">
+        <a href="/DonHang?trangThai=tatca&sortBy=@sortBy" 
+           class="status-tab @(trangThai == "tatca" ? "active" : "")">
+            <span class="tab-icon">📊</span>
+            <div class="tab-content">
+                <span class="tab-label">Tất cả</span>
+                <span class="tab-count">@totalAllOrders</span>
+            </div>
+        </a>
+
+        <a href="/DonHang?trangThai=CHOXACNHAN&sortBy=@sortBy" 
+           class="status-tab warning @(trangThai == "CHOXACNHAN" ? "active" : "")">
+            <span class="tab-icon">⏳</span>
+            <div class="tab-content">
+                <span class="tab-label">Chờ xác nhận</span>
+                <span class="tab-count">@countChoXacNhan</span>
+            </div>
+        </a>
+
+        <a href="/DonHang?trangThai=DANGCHUANBI&sortBy=@sortBy" 
+           class="status-tab info @(trangThai == "DANGCHUANBI" ? "active" : "")">
+            <span class="tab-icon">👨‍🍳</span>
+            <div class="tab-content">
+                <span class="tab-label">Đang chuẩn bị</span>
+                <span class="tab-count">@countDangChuanBi</span>
+            </div>
+        </a>
+
+        <a href="/DonHang?trangThai=HOANTHANH&sortBy=@sortBy" 
+           class="status-tab success @(trangThai == "HOANTHANH" ? "active" : "")">
+            <span class="tab-icon">✅</span>
+            <div class="tab-content">
+                <span class="tab-label">Hoàn thành</span>
+                <span class="tab-count">@countHoanThanh</span>
+            </div>
+        </a>
+
+        <a href="/DonHang?trangThai=HUY&sortBy=@sortBy" 
+           class="status-tab danger @(trangThai == "HUY" ? "active" : "")">
+            <span class="tab-icon">❌</span>
+            <div class="tab-content">
+                <span class="tab-label">Đã hủy</span>
+                <span class="tab-count">@countHuy</span>
+            </div>
+        </a>
+    </div>
+</div>
+
+    <!-- Toolbar với sắp xếp -->
+    <div class="donhang-toolbar">
+        <div class="toolbar-left">
+            <span class="text-muted">
+                Hiển thị <strong>@startItem-@endItem</strong> trong tổng số <strong>@totalItems</strong> đơn
+            </span>
+        </div>
+        <div class="toolbar-right">
+            <form method="get" class="sort-form">
+                <input type="hidden" name="trangThai" value="@trangThai" />
+                <label>Sắp xếp:</label>
+                <select name="sortBy" class="form-select-inline" onchange="this.form.submit()">
+                    <option value="moinhat" @(sortBy == "moinhat" ? "selected" : "")>Mới nhất</option>
+                    <option value="cunhat" @(sortBy == "cunhat" ? "selected" : "")>Cũ nhất</option>
+                    <option value="tongtien-cao" @(sortBy == "tongtien-cao" ? "selected" : "")>Tổng tiền (Cao → Thấp)</option>
+                    <option value="tongtien-thap" @(sortBy == "tongtien-thap" ? "selected" : "")>Tổng tiền (Thấp → Cao)</option>
+                    <option value="ban" @(sortBy == "ban" ? "selected" : "")>Theo số bàn</option>
+                </select>
+            </form>
+        </div>
+    </div>
+
+    <div class="card-body">
+        @if (Model.Any())
+        {
+            <div class="table-container">
+                <table class="donhang-table">
+                    <thead>
+                        <tr>
+                            <th>Mã Đơn</th>
+                            <th>Bàn</th>
+                            <th>Tổng Tiền</th>
+                            <th>Ghi Chú Khách</th>
+                            <th>Trạng Thái</th>
+                            <th>Ngày Cập Nhật</th>
+                            <th class="text-center">Hành Động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+    @foreach (var item in Model)
+    {
+        <tr class="table-row-highlight">
+            <td><strong class="text-primary">#@item.SoDon</strong></td>
+            <td><span class="badge bg-light text-dark border">Bàn @item.SoBan</span></td>
+            <td><strong class="text-success">@item.TongTien.ToString("N0")đ</strong></td>
+            
+            <!-- ✅ THÊM CỘT GHI CHÚ -->
+            <td>
+                @if (!string.IsNullOrEmpty(item.GhiChuKhach))
+                {
+                    <small class="text-muted">
+                        @if (item.GhiChuKhach.Length > 30)
+                        {
+                            @item.GhiChuKhach.Substring(0, 30)<text>...</text>
+                        }
+                        else
+                        {
+                            @item.GhiChuKhach
+                        }
+                    </small>
+                }
+                else
+                {
+                    <span class="text-muted">--</span>
+                }
+            </td>
+            
+            <td>
+                <span class="badge donhang-badge @GetStatusBadgeClass(item.TrangThai)">
+                    @GetDisplayText(item.TrangThai)
+                </span>
+            </td>
+            <td>
+                <span class="text-muted">@item.NgayCapNhat?.ToString("dd/MM/yyyy")</span><br>
+                <small class="text-secondary">@item.NgayCapNhat?.ToString("HH:mm")</small>
+            </td>
+            <td class="donhang-actions text-center">
+                <a href="/DonHang/Details/@item.DonId" class="btn btn-primary btn-sm">
+                    👁️ Chi Tiết
+                </a>
+            </td>
+        </tr>
+    }
+</tbody>
+                </table>
+            </div>
+
+            @if (totalPages > 1)
+            {
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination donhang-pagination justify-content-center">
+                        @if (currentPage > 1)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" 
+                                   href="@Url.Action("Index", new { sortBy, trangThai, page = currentPage - 1 })">
+                                    &laquo; Trước
+                                </a>
+                            </li>
+                        }
+
+                        @for (int i = 1; i <= totalPages; i++)
+                        {
+                            if (i == 1 || i == totalPages || (i >= currentPage - 2 && i <= currentPage + 2))
+                            {
+                                <li class="page-item @(i == currentPage ? "active" : "")">
+                                    <a class="page-link" 
+                                       href="@Url.Action("Index", new { sortBy, trangThai, page = i })">
+                                        @i
+                                    </a>
+                                </li>
+                            }
+                            else if (i == currentPage - 3 || i == currentPage + 3)
+                            {
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                            }
+                        }
+
+                        @if (currentPage < totalPages)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" 
+                                   href="@Url.Action("Index", new { sortBy, trangThai, page = currentPage + 1 })">
+                                    Sau &raquo;
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                    <div class="text-center mt-2 text-muted">
+                        Trang <strong>@currentPage</strong> / <strong>@totalPages</strong>
+                    </div>
+                </nav>
+            }
+        }
+        else
+        {
+            <div class="donhang-empty">
+                <div class="empty-icon">📭</div>
+                <h3>Không có đơn hàng nào</h3>
+                <p class="text-muted mb-3">Hiện tại chưa có đơn hàng nào với trạng thái "@GetDisplayText(trangThai)"</p>
+                @if (trangThai != "tatca")
+                {
+                    <a href="/DonHang" class="btn btn-primary">Xem tất cả đơn hàng</a>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@functions {
+    string GetStatusBadgeClass(string? trangThai)
+    {
+        return trangThai?.ToUpper() switch
+        {
+            "HOANTHANH" => "badge-success",
+            "HUY" => "badge-danger", 
+            "CHOXACNHAN" => "badge-warning",
+            "DANGCHUANBI" => "badge-info",
+            _ => "badge-secondary"
+        };
+    }
+    
+    string GetDisplayText(string? apiStatus)
+    {
+        return apiStatus?.ToUpper() switch
+        {
+            "HOANTHANH" => "Đã hoàn thành",
+            "HUY" => "Hủy", 
+            "CHOXACNHAN" => "Chờ xác nhận",
+            "DANGCHUANBI" => "Đang chuẩn bị",
+            "TATCA" => "Tất cả",
+            _ => apiStatus ?? "Không xác định"
+        };
+    }
+}
+
+<style>
+/* Status Tabs */
+.status-tabs-container {
+    background: white;
+    padding: 1.5rem;
+    border-bottom: 2px solid #f0f0f0;
+    margin-bottom: 0;
+}
+
+.status-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.status-tab {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #495057;
+    transition: all 0.3s ease;
+    min-width: 180px;
+}
+
+.status-tab:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+.status-tab .tab-icon {
+    font-size: 2rem;
+}
+
+.status-tab .tab-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.status-tab .tab-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #6c757d;
+}
+
+.status-tab .tab-count {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+/* Active state */
+.status-tab.active {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    border-color: #2c3e50;
+    color: white;
+}
+
+.status-tab.active .tab-label,
+.status-tab.active .tab-count {
+    color: white;
+}
+
+/* Color variants */
+.status-tab.warning.active {
+    background: linear-gradient(135deg, #f39c12 0%, #f1c40f 100%);
+}
+
+.status-tab.info.active {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+}
+
+.status-tab.success.active {
+    background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+}
+
+.status-tab.danger.active {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+}
+
+/* Toolbar */
+.donhang-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: white;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.toolbar-left {
+    font-size: 0.9rem;
+}
+
+.toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.sort-form {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-select-inline {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    min-width: 200px;
+}
+</style>

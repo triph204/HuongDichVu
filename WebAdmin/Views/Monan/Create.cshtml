@@ -1,0 +1,130 @@
+@model MonAnViewModel
+@{
+    ViewData["Title"] = "Thêm Món Ăn";
+}
+
+<div class="card">
+    <div class="card-header">
+        <h2>Thêm Món Ăn Mới</h2>
+    </div>
+    <div class="card-body">
+        @if (ViewData.ModelState.ErrorCount > 0)
+        {
+            <div class="alert alert-danger">
+                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <p>@error.ErrorMessage</p>
+                }
+            </div>
+        }
+
+        <form method="post" enctype="multipart/form-data">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Tên Món *</label>
+                    <input type="text" name="TenMon" value="@Model?.TenMon" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Danh Mục *</label>
+                    <select name="DanhMucId" required>
+                        <option value="">-- Chọn danh mục --</option>
+                        @if (Model?.DanhMucList != null)
+                        {
+                            @foreach (var dm in Model.DanhMucList)
+                            {
+                                <option value="@dm.DanhMucId" selected="@(Model?.DanhMucId == dm.DanhMucId)">
+                                    @dm.TenDanhMuc
+                                </option>
+                            }
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Giá *</label>
+                    <input type="number" name="Gia" value="@Model?.Gia" step="1000" min="0" required>
+                </div>
+
+                <div class="form-group checkbox">
+                    <label>
+                        <input type="checkbox" name="CoSan" value="true" checked="@(Model?.CoSan != false)">
+                        Có sẵn
+                    </label>
+                </div>
+            </div>
+
+            <!-- ✅ PHẦN UPLOAD ẢNH MỚI -->
+            <div class="form-group">
+                <label>Ảnh Món Ăn</label>
+                
+                <!-- Preview Box -->
+                <div class="image-preview-container">
+                    <img id="imagePreview" 
+                         src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='225' viewBox='0 0 300 225'%3E%3Crect width='300' height='225' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='16' fill='%23999'%3EChọn ảnh món ăn%3C/text%3E%3C/svg%3E" 
+                         alt="Preview">
+                </div>
+                
+                <!-- Input File -->
+                <input type="file" 
+                       name="ImageFile" 
+                       id="ImageFile"
+                       accept="image/jpeg,image/png,image/jpg" 
+                       onchange="previewImage(this)">
+                
+                <small class="text-muted">
+                    📸 Chọn ảnh JPG/PNG, tối đa 2MB. Ảnh sẽ tự động resize về 800x600px (tỉ lệ 4:3).
+                </small>
+            </div>
+
+            <div class="form-group">
+                <label>Mô Tả</label>
+                <textarea name="MoTa" placeholder="Mô tả ngắn về món ăn...">@Model?.MoTa</textarea>
+            </div>
+
+            <div class="btn-group">
+                <button type="submit" class="btn btn-success">
+                    💾 Lưu
+                </button>
+                <a href="/MonAn" class="btn btn-light">
+                    ↩️ Hủy
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ✅ JAVASCRIPT PREVIEW ẢNH -->
+<script>
+function previewImage(input) {
+    const preview = document.getElementById('imagePreview');
+    
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        
+        // Kiểm tra kích thước file (2MB)
+        if (file.size > 2 * 1024 * 1024) {
+            alert('⚠️ File ảnh quá lớn! Vui lòng chọn file nhỏ hơn 2MB.');
+            input.value = '';
+            return;
+        }
+        
+        // Kiểm tra loại file
+        if (!file.type.match('image/(jpeg|jpg|png)')) {
+            alert('⚠️ Chỉ chấp nhận file JPG, JPEG, PNG!');
+            input.value = '';
+            return;
+        }
+        
+        // Preview ảnh
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            preview.style.objectFit = 'cover';
+        }
+        reader.readAsDataURL(file);
+    }
+}
+</script>

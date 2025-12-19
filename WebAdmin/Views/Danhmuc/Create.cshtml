@@ -1,0 +1,31 @@
+
+
+@model DanhMucViewModel
+@{
+    ViewData["Title"] = "Thêm Danh Mục";
+}
+
+<div class="card">
+    <div class="card-header">
+        <h2>Thêm Danh Mục Mới</h2>
+    </div>
+    <div class="card-body">
+        <form asp-action="Create" method="post">
+        @Html.AntiForgeryToken()
+            <div class="form-group">
+                <label>Tên Danh Mục *</label>
+                <input type="text" name="TenDanhMuc" value="@Model?.TenDanhMuc" required>
+            </div>
+
+            <div class="form-group">
+                <label>Mô Tả</label>
+                <textarea name="MoTa">@Model?.MoTa</textarea>
+            </div>
+
+            <div class="btn-group">
+                <button type="submit" class="btn btn-success">Lưu</button>
+                <a href="/DanhMuc" class="btn btn-light">Hủy</a>
+            </div>
+        </form>
+    </div>
+</div>

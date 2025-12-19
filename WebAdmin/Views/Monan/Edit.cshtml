@@ -1,0 +1,133 @@
+@model MonAnViewModel
+@{
+    ViewData["Title"] = "Sửa Món Ăn";
+    var apiBaseUrl = ViewData["ApiBaseUrl"]?.ToString() ?? "";
+}
+
+<div class="card">
+    <div class="card-header">
+        <h2>Sửa Món Ăn</h2>
+    </div>
+    <div class="card-body">
+        @if (ViewData.ModelState.ErrorCount > 0)
+        {
+            <div class="alert alert-danger">
+                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <p>@error.ErrorMessage</p>
+                }
+            </div>
+        }
+
+        <form method="post" enctype="multipart/form-data">
+            <input type="hidden" name="MonId" value="@Model.MonId">
+            <input type="hidden" name="AnhUrl" value="@Model.AnhUrl">
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Tên Món *</label>
+                    <input type="text" name="TenMon" value="@Model.TenMon" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Danh Mục *</label>
+                    <select name="DanhMucId" required>
+                        <option value="">-- Chọn danh mục --</option>
+                        @foreach (var dm in Model.DanhMucList)
+                        {
+                            <option value="@dm.DanhMucId" selected="@(Model.DanhMucId == dm.DanhMucId)">
+                                @dm.TenDanhMuc
+                            </option>
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Giá *</label>
+                    <input type="number" name="Gia" value="@Model.Gia" step="1000" min="0" required>
+                </div>
+
+                <div class="form-group checkbox">
+                    <label>
+                        <input type="checkbox" name="CoSan" value="true" checked="@(Model.CoSan == true)">
+                        Có sẵn
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Ảnh Món Ăn</label>
+                
+                <div class="image-preview-container">
+                    @if (!string.IsNullOrEmpty(Model.AnhUrl))
+                    {
+                        <img id="imagePreview" 
+                             src="@(apiBaseUrl)@(Model.AnhUrl)" 
+                             alt="@Model.TenMon">
+                    }
+                    else
+                    {
+                        <img id="imagePreview" 
+                             src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='225' viewBox='0 0 300 225'%3E%3Crect width='300' height='225' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='16' fill='%23999'%3EChưa có ảnh%3C/text%3E%3C/svg%3E" 
+                             alt="Preview">
+                    }
+                </div>
+                
+                <input type="file" 
+                       name="ImageFile" 
+                       id="ImageFile"
+                       accept="image/jpeg,image/png,image/jpg" 
+                       onchange="previewImage(this)">
+                
+                <small class="text-muted">
+                    📸 Chọn ảnh mới để thay thế (JPG/PNG, tối đa 2MB). Ảnh cũ sẽ tự động bị xóa.
+                </small>
+            </div>
+
+            <div class="form-group">
+                <label>Mô Tả</label>
+                <textarea name="MoTa" placeholder="Mô tả ngắn về món ăn...">@Model.MoTa</textarea>
+            </div>
+
+            <div class="btn-group">
+                <button type="submit" class="btn btn-success">
+                    💾 Cập Nhật
+                </button>
+                <a href="/MonAn" class="btn btn-light">
+                    ↩️ Hủy
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function previewImage(input) {
+    const preview = document.getElementById('imagePreview');
+    
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        
+        if (file.size > 2 * 1024 * 1024) {
+            alert('⚠️ File ảnh quá lớn! Vui lòng chọn file nhỏ hơn 2MB.');
+            input.value = '';
+            return;
+        }
+        
+        if (!file.type.match('image/(jpeg|jpg|png)')) {
+            alert('⚠️ Chỉ chấp nhận file JPG, JPEG, PNG!');
+            input.value = '';
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            preview.style.objectFit = 'cover';
+        }
+        reader.readAsDataURL(file);
+    }
+}
+</script>

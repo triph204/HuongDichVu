@@ -1,0 +1,201 @@
+@model PaginatedList<MonAnViewModel>
+@{
+    ViewData["Title"] = "Quản Lý Món Ăn";
+    var danhMucList = ViewData["DanhMucList"] as List<DanhMucViewModel> ?? new List<DanhMucViewModel>();
+    var currentCategory = (int)(ViewData["CurrentCategory"] ?? 0);
+}
+
+<div class="card">
+    <div class="card-header d-flex justify-between align-center">
+        <h2>🍴 Danh Sách Món Ăn</h2>
+        <a href="/MonAn/Create" class="btn btn-secondary">+ Thêm Món</a>
+    </div>
+
+    <!-- ✅ FILTER THEO DANH MỤC -->
+    <div class="card-body">
+        <div class="filter-section mb-20">
+            <form method="get" action="/MonAn" class="d-flex gap-10 align-center">
+                <label for="categoryFilter" style="font-weight: 600; white-space: nowrap;">
+                    <i class="fas fa-filter"></i> Lọc theo danh mục:
+                </label>
+                <select id="categoryFilter" name="categoryId" class="form-control" style="max-width: 300px;" onchange="this.form.submit()">
+                    @if (currentCategory == 0)
+                    {
+                        <option value="0" selected>-- Tất cả danh mục --</option>
+                    }
+                    else
+                    {
+                        <option value="0">-- Tất cả danh mục --</option>
+                    }
+                    
+                    @foreach (var dm in danhMucList)
+                    {
+                        @if (currentCategory == dm.DanhMucId)
+                        {
+                            <option value="@dm.DanhMucId" selected>@dm.TenDanhMuc</option>
+                        }
+                        else
+                        {
+                            <option value="@dm.DanhMucId">@dm.TenDanhMuc</option>
+                        }
+                    }
+                </select>
+                
+                @if (currentCategory > 0)
+                {
+                    <a href="/MonAn" class="btn btn-light btn-sm">
+                        <i class="fas fa-times"></i> Xóa lọc
+                    </a>
+                }
+            </form>
+        </div>
+
+        <!-- ✅ THÔNG TIN PHÂN TRANG -->
+        <div class="mb-20" style="color: #666;">
+            Hiển thị <strong>@Model.Items.Count</strong> trong tổng số <strong>@Model.TotalCount</strong> món ăn
+            @if (currentCategory > 0)
+            {
+                var categoryName = danhMucList.FirstOrDefault(d => d.DanhMucId == currentCategory)?.TenDanhMuc;
+                <span> - Danh mục: <strong>@categoryName</strong></span>
+            }
+        </div>
+
+        <!-- ✅ BẢNG MÓN ĂN -->
+        @if (Model.Items.Any())
+        {
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tên Món</th>
+                            <th>Danh Mục</th>
+                            <th>Giá</th>
+                            <th>Có Sẵn</th>
+                            <th>Hành Động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Items)
+                        {
+                            <tr>
+                                <td>@item.TenMon</td>
+                                <td>@(item.TenDanhMuc)</td>
+                                <td>@item.Gia.ToString("N0")đ</td>
+                                <td>
+                                    <span class="badge @(item.CoSan ? "badge-success" : "badge-danger")">
+                                        @(item.CoSan ? "✓ Có" : "✗ Hết")
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="/MonAn/Edit/@item.MonId" class="btn btn-primary btn-sm">Sửa</a>
+                                        <a href="/MonAn/Delete/@item.MonId" class="btn btn-danger btn-sm" 
+                                           onclick="return confirm('Xác nhận xóa món @item.TenMon?')">Xóa</a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- ✅ PHÂN TRANG THÔNG MINH -->
+            @if (Model.TotalPages > 1)
+            {
+                <div class="pagination-container mt-20">
+                    <ul class="pagination">
+                        <!-- ✅ Previous - CHỈ hiển thị nếu có trang trước -->
+                        @if (Model.HasPreviousPage)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="?page=@(Model.PageIndex - 1)&categoryId=@currentCategory">
+                                    <i class="fas fa-chevron-left"></i> Trước
+                                </a>
+                            </li>
+                        }
+
+                        @{
+                            // Tính toán phạm vi trang hiển thị (hiển thị 5 trang: 2 trước + hiện tại + 2 sau)
+                            int startPage = Math.Max(1, Model.PageIndex - 2);
+                            int endPage = Math.Min(Model.TotalPages, Model.PageIndex + 2);
+                            
+                            // Điều chỉnh để luôn hiển thị 5 trang nếu có thể
+                            if (endPage - startPage < 4)
+                            {
+                                if (startPage == 1)
+                                {
+                                    endPage = Math.Min(Model.TotalPages, startPage + 4);
+                                }
+                                else if (endPage == Model.TotalPages)
+                                {
+                                    startPage = Math.Max(1, endPage - 4);
+                                }
+                            }
+                        }
+
+                        <!-- ✅ Trang đầu + dấu ... nếu cần -->
+                        @if (startPage > 1)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1&categoryId=@currentCategory">1</a>
+                            </li>
+                            @if (startPage > 2)
+                            {
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                            }
+                        }
+
+                        <!-- ✅ Các trang trong phạm vi -->
+                        @for (int i = startPage; i <= endPage; i++)
+                        {
+                            <li class="page-item @(i == Model.PageIndex ? "active" : "")">
+                                <a class="page-link" href="?page=@i&categoryId=@currentCategory">@i</a>
+                            </li>
+                        }
+
+                        <!-- ✅ Dấu ... + trang cuối nếu cần -->
+                        @if (endPage < Model.TotalPages)
+                        {
+                            @if (endPage < Model.TotalPages - 1)
+                            {
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                            }
+                            <li class="page-item">
+                                <a class="page-link" href="?page=@Model.TotalPages&categoryId=@currentCategory">@Model.TotalPages</a>
+                            </li>
+                        }
+
+                        <!-- ✅ Next - CHỈ hiển thị nếu có trang sau -->
+                        @if (Model.HasNextPage)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="?page=@(Model.PageIndex + 1)&categoryId=@currentCategory">
+                                    Sau <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="no-data">
+                <p>
+                    @if (currentCategory > 0)
+                    {
+                        <text>Không có món ăn nào trong danh mục này</text>
+                    }
+                    else
+                    {
+                        <text>Chưa có món ăn nào</text>
+                    }
+                </p>
+            </div>
+        }
+    </div>
+</div>
