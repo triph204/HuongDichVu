@@ -1,0 +1,50 @@
+
+
+@model BanAnViewModel
+@{
+    bool isEdit = (bool?)ViewBag.IsEdit ?? false;  // Xử lý null
+    ViewData["Title"] = ViewBag.IsEdit ? "Sửa Bàn Ăn" : "Thêm Bàn Ăn";
+    var ngayTaoValue = Model?.NgayTao != null ? Model.NgayTao.ToString("yyyy-MM-ddTHH:mm") : DateTime.Now.ToString("yyyy-MM-ddTHH:mm");
+}
+
+<div class="card">
+    <div class="card-header">
+        <h2>@ViewData["Title"]</h2>
+    </div>
+    <div class="card-body">
+        <form method="post" asp-action="Edit" asp-controller="BanAn">
+            @if (ViewBag.IsEdit)
+            {
+                <input type="hidden" name="BanId" value="@Model.BanId">
+            }
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Số Bàn *</label>
+                    <input type="number" name="SoBan" value="@Model?.SoBan" required>
+                </div>
+                
+            </div>
+                <div class ="form-row">
+                    <div class="form-group">
+                        <label>Trạng Thái</label>
+                        <select name="TrangThai">
+                            <option value="Trống" selected="@(Model?.TrangThai == "Trống")">Trống</option>
+                            <option value="Đang sử dụng" selected="@(Model?.TrangThai == "Đang sử dụng")">Đang sử dụng</option>
+                            <option value="Bảo trì" selected="@(Model?.TrangThai == "Bảo trì")">Bảo trì</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                <div class="form-group">
+                    <label>Ngày Tạo</label>
+                    <input type="datetime-local" name="NgayTao" value="@ngayTaoValue" @(isEdit ? "" : "readonly")>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button type="submit" class="btn btn-success">@(ViewBag.IsEdit ? "Cập Nhật" : "Lưu")</button>
+                <a href="/BanAn" class="btn btn-light">Hủy</a>
+            </div>
+        </form>
+    </div>
+</div>

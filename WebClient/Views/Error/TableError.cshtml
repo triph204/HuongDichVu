@@ -1,0 +1,307 @@
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>L?i - Bàn không h?p l?</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .error-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .error-header {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);
+            padding: 40px 30px;
+            color: white;
+        }
+
+        .error-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @@keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .error-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .error-subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .error-body {
+            padding: 40px 30px;
+        }
+
+        .error-code {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin-bottom: 25px;
+            border-left: 4px solid #dc3545;
+        }
+
+        .error-code-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #6c757d;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .error-code-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: #dc3545;
+            font-family: 'Courier New', monospace;
+        }
+
+        .error-message {
+            font-size: 16px;
+            color: #495057;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .error-tips {
+            background: #fff3cd;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        .error-tips-title {
+            font-weight: 600;
+            color: #856404;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .error-tips ul {
+            margin: 0;
+            padding-left: 20px;
+            color: #856404;
+        }
+
+        .error-tips li {
+            margin-bottom: 5px;
+        }
+
+        .btn-primary-custom {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 15px 40px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 50px;
+            color: white;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+            color: white;
+        }
+
+        .error-footer {
+            background: #f8f9fa;
+            padding: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .error-footer p {
+            margin: 0;
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        .restaurant-logo {
+            margin-bottom: 15px;
+        }
+
+        .restaurant-logo i {
+            font-size: 40px;
+            color: white;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @@keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .qr-suggestion {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            background: #e8f4fd;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+
+        .qr-suggestion i {
+            font-size: 40px;
+            color: #0d6efd;
+        }
+
+        .qr-suggestion-text {
+            text-align: left;
+            font-size: 14px;
+            color: #495057;
+        }
+
+        .qr-suggestion-text strong {
+            display: block;
+            color: #0d6efd;
+            margin-bottom: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container fade-in">
+        <!-- Header -->
+        <div class="error-header">
+            <div class="restaurant-logo">
+                <i class="fas fa-utensils"></i>
+            </div>
+            <div class="error-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h1 class="error-title">Oops! Có l?i x?y ra</h1>
+            <p class="error-subtitle">Không th? truy c?p th?c ??n</p>
+        </div>
+
+        <!-- Body -->
+        <div class="error-body">
+            <!-- Error Code -->
+            <div class="error-code">
+                <div class="error-code-title">Mã l?i</div>
+                <div class="error-code-value" id="errorCode">TABLE_INVALID</div>
+            </div>
+
+            <!-- Error Message -->
+            <p class="error-message" id="errorMessage">
+                Bàn b?n ?ang c? truy c?p không t?n t?i ho?c không h?p l? trong h? th?ng c?a chúng tôi.
+            </p>
+
+            <!-- QR Suggestion -->
+            <div class="qr-suggestion">
+                <i class="fas fa-qrcode"></i>
+                <div class="qr-suggestion-text">
+                    <strong>B?n quên quét mã QR?</strong>
+                    Vui lòng quét mã QR trên bàn ?? truy c?p th?c ??n
+                </div>
+            </div>
+
+            <!-- Tips -->
+            <div class="error-tips">
+                <div class="error-tips-title">
+                    <i class="fas fa-lightbulb"></i>
+                    B?n có th? th?:
+                </div>
+                <ul>
+                    <li>Quét l?i mã QR trên bàn c?a b?n</li>
+                    <li>Ki?m tra l?i ???ng link truy c?p</li>
+                    <li>Liên h? nhân viên ?? ???c h? tr?</li>
+                    <li>??m b?o s? bàn ???c nh?p chính xác</li>
+                </ul>
+            </div>
+
+            <!-- Contact -->
+            <a href="javascript:void(0)" onclick="contactStaff()" class="btn-primary-custom">
+                <i class="fas fa-headset me-2"></i>
+                G?i nhân viên h? tr?
+            </a>
+        </div>
+
+        <!-- Footer -->
+        <div class="error-footer">
+            <p>
+                <i class="fas fa-phone me-1"></i> Hotline: 0123 456 789
+            </p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const errorCode = urlParams.get('code') || 'TABLE_INVALID';
+            const errorMessage = urlParams.get('message');
+            const tableName = urlParams.get('table');
+
+            document.getElementById('errorCode').textContent = errorCode;
+
+            let message = '';
+            switch(errorCode) {
+                case 'EMPTY_TABLE':
+                    message = 'B?n ch?a ch?n bàn. Vui lòng quét mã QR trên bàn ?? truy c?p th?c ??n.';
+                    break;
+                case 'TABLE_NOT_FOUND':
+                    message = 'Bàn "' + (tableName || 'không xác ??nh') + '" không t?n t?i trong h? th?ng. Vui lòng ki?m tra l?i ho?c quét mã QR trên bàn.';
+                    break;
+                case 'TABLE_MAINTENANCE':
+                    message = 'Bàn "' + (tableName || '') + '" hi?n ?ang b?o trì. Vui lòng ch?n bàn khác ho?c liên h? nhân viên.';
+                    break;
+                case 'TABLE_INVALID':
+                default:
+                    message = errorMessage || 'Bàn b?n ?ang c? truy c?p không t?n t?i ho?c không h?p l? trong h? th?ng c?a chúng tôi.';
+                    break;
+            }
+
+            document.getElementById('errorMessage').textContent = message;
+        });
+
+        function contactStaff() {
+            alert('?ã thông báo cho nhân viên. Vui lòng ??i trong giây lát!');
+        }
+    </script>
+</body>
+</html>

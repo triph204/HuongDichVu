@@ -1,0 +1,705 @@
+﻿/* ===== GENERAL STYLES ===== */
+:root {
+    --primary-color: #dc3545;
+    --secondary-color: #ffc107;
+    --dark-color: #212529;
+    --light-color: #f8f9fa;
+    --border-radius: 12px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f5f5f5;
+    padding-bottom: 80px;
+}
+
+/* ===== HEADER ===== */
+.header-top {
+    background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--dark-color);
+    display: flex;
+    align-items: center;
+}
+
+.logo i {
+    font-size: 2rem;
+}
+
+/* ===== SEARCH BOX ===== */
+.search-box {
+    position: relative;
+}
+
+.search-box input {
+    padding: 10px 40px 10px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 25px;
+    width: 100%;
+    transition: all 0.3s;
+}
+
+.search-box input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+}
+
+.search-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+}
+
+/* ===== CART BUTTON ===== */
+.btn-cart {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-size: 1.2rem;
+    transition: all 0.3s;
+}
+
+.btn-cart:hover {
+    background: #c82333;
+    transform: scale(1.05);
+}
+
+.cart-count {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    font-size: 0.75rem;
+    padding: 3px 7px;
+    border-radius: 10px;
+}
+
+/* ===== BANNER CAROUSEL ===== */
+.carousel-item {
+    height: 350px;
+}
+
+.banner-slide {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.banner-1 {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.banner-2 {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.banner-3 {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.banner-content {
+    text-align: center;
+    color: white;
+    z-index: 2;
+}
+
+.banner-content h2 {
+    font-size: 3rem;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    margin-bottom: 10px;
+}
+
+.banner-content p {
+    font-size: 1.5rem;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* ===== CATEGORY SECTION ===== */
+.category-section {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.category-title {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: var(--dark-color);
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 3px solid var(--primary-color);
+    display: inline-block;
+}
+
+/* ===== DISH CARD - FIXED ===== */
+.dish-card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    border: 2px solid transparent;
+}
+
+.dish-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 20px;
+    padding: 2px;
+    background: linear-gradient(135deg, rgba(220, 53, 69, 0.3), rgba(255, 193, 7, 0.3));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.dish-card:hover::before {
+    opacity: 1;
+}
+
+.dish-card:hover {
+    transform: translateY(-12px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(220, 53, 69, 0.2);
+    border-color: rgba(220, 53, 69, 0.1);
+}
+
+/* ✅ FIX: Image container với height cố định */
+.dish-card>div:first-child {
+    position: relative;
+    width: 100%;
+    height: 240px;
+    /* ✅ Height cố định thay vì padding-top */
+    overflow: hidden;
+    background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+}
+
+.dish-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dish-card:hover img {
+    transform: scale(1.15) rotate(2deg);
+}
+
+/* Gradient overlay on image */
+.dish-card>div:first-child::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 100px;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.4) 0%, transparent 100%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.dish-card:hover>div:first-child::after {
+    opacity: 1;
+}
+
+/* Badge styles - Enhanced */
+.sold-out-badge {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(50, 50, 50, 0.9));
+    color: white;
+    padding: 8px 18px;
+    border-radius: 25px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    z-index: 10;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.in-cart-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 25px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    z-index: 10;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    animation: slideInRight 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100px) scale(0.5);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0) scale(1);
+        opacity: 1;
+    }
+}
+
+.in-cart-badge::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: 100%;
+    background: inherit;
+    border-radius: 25px;
+    animation: pulse 2s infinite;
+    z-index: -1;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: translate(-50%, -50%) scale(1.1);
+        opacity: 0.7;
+    }
+}
+
+.in-cart-badge i {
+    font-size: 0.95rem;
+    animation: checkBounce 0.6s ease 0.3s;
+}
+
+@keyframes checkBounce {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.3);
+    }
+}
+
+/* Dish info section - Enhanced */
+.dish-info {
+    padding: 24px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: linear-gradient(to bottom, white 0%, #fafafa 100%);
+}
+
+.dish-name {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--dark-color);
+    margin-bottom: 6px;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 50px;
+    transition: color 0.3s ease;
+}
+
+.dish-card:hover .dish-name {
+    color: var(--primary-color);
+}
+
+.dish-desc {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 12px;
+    flex: 1;
+    line-height: 1.6;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Price and button container */
+.dish-info>div:last-child {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding-top: 12px;
+    border-top: 2px solid #f0f0f0;
+}
+
+.dish-price {
+    font-size: 1.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #dc3545 0%, #ff6b6b 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0;
+    position: relative;
+}
+
+.dish-price::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary-color), transparent);
+    transition: width 0.4s ease;
+}
+
+.dish-card:hover .dish-price::after {
+    width: 100%;
+}
+
+/* Add to cart button - Super Enhanced */
+.btn-add-cart {
+    padding: 12px 24px;
+    border-radius: 30px;
+    border: none;
+    font-weight: 700;
+    font-size: 0.95rem;
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-add-cart::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s ease, height 0.6s ease;
+}
+
+.btn-add-cart:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.btn-add-cart.btn-danger {
+    background: linear-gradient(135deg, #dc3545 0%, #ff6b6b 100%);
+    color: white;
+}
+
+.btn-add-cart.btn-danger:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 10px 30px rgba(220, 53, 69, 0.4);
+    background: linear-gradient(135deg, #ff6b6b 0%, #dc3545 100%);
+}
+
+.btn-add-cart.btn-danger:active {
+    transform: translateY(-1px) scale(1.02);
+}
+
+.btn-add-cart.btn-secondary {
+    background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+    color: white;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.btn-add-cart i {
+    font-size: 1.1rem;
+    transition: transform 0.4s ease;
+}
+
+.btn-add-cart:hover i {
+    transform: scale(1.2) rotate(10deg);
+}
+
+/* ===== NOTIFICATION TOAST ===== */
+.notification-toast {
+    animation: slideInDown 0.4s ease;
+}
+
+@keyframes slideInDown {
+    from {
+        transform: translateY(-100px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* ===== FOOTER ===== */
+.footer {
+    background: var(--dark-color);
+    color: white;
+    margin-top: 50px;
+}
+
+.footer h5 {
+    color: var(--secondary-color);
+    margin-bottom: 15px;
+}
+
+.footer i {
+    margin-right: 8px;
+    color: var(--secondary-color);
+}
+
+.footer .text-muted {
+    color: #adb5bd !important;
+}
+
+/* ===== MOBILE BOTTOM NAV ===== */
+.mobile-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 0;
+    z-index: 1000;
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: none;
+    border: none;
+    color: #999;
+    transition: all 0.3s;
+    padding: 5px 20px;
+    cursor: pointer;
+}
+
+.nav-item i {
+    font-size: 1.5rem;
+    margin-bottom: 5px;
+}
+
+.nav-item span {
+    font-size: 0.85rem;
+}
+
+.nav-item.active {
+    color: var(--primary-color);
+}
+
+.nav-item:hover {
+    color: var(--primary-color);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 992px) {
+    .dish-card>div:first-child {
+        height: 220px;
+    }
+
+    .dish-info {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .banner-content h2 {
+        font-size: 2rem;
+    }
+
+    .banner-content p {
+        font-size: 1rem;
+    }
+
+    .carousel-item {
+        height: 250px;
+    }
+
+    .category-title {
+        font-size: 1.4rem;
+    }
+
+    .dish-card>div:first-child {
+        height: 200px;
+    }
+
+    .dish-name {
+        font-size: 1.1rem;
+        min-height: 45px;
+    }
+
+    .dish-price {
+        font-size: 1.3rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .dish-card>div:first-child {
+        height: 180px;
+    }
+
+    .dish-name {
+        font-size: 1rem;
+        min-height: 40px;
+    }
+
+    .dish-price {
+        font-size: 1.2rem;
+    }
+
+    .dish-info {
+        padding: 18px;
+    }
+
+    .btn-add-cart {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+}
+
+/* ===== LOADING SPINNER ===== */
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
+/* ===== SMOOTH TRANSITIONS ===== */
+button,
+a,
+input {
+    transition: all 0.3s ease;
+}
+
+
+/* ===== CATEGORY TABS ===== */
+.category-tabs-container {
+    background: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 70px;
+    /* Dính dưới header */
+    z-index: 999;
+    padding: 15px 0;
+}
+
+.category-tabs {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 5px;
+    scrollbar-width: thin;
+}
+
+.category-tabs::-webkit-scrollbar {
+    height: 6px;
+}
+
+.category-tabs::-webkit-scrollbar-thumb {
+    background: #ddd;
+    border-radius: 10px;
+}
+
+.category-tab {
+    padding: 12px 24px;
+    border: 2px solid #e0e0e0;
+    background: white;
+    border-radius: 25px;
+    font-weight: 600;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.3s;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.category-tab:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    transform: translateY(-2px);
+}
+
+.category-tab.active {
+    background: linear-gradient(135deg, #dc3545 0%, #ff6b6b 100%);
+    color: white;
+    border-color: #dc3545;
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .category-tabs-container {
+        top: 60px;
+    }
+
+    .category-tab {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+}

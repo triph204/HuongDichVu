@@ -1,0 +1,147 @@
+@model List<BanAnViewModel>
+
+@{
+    ViewData["Title"] = "Quản Lý QR Code";
+}
+
+<div class="page-header">
+    <h2>📱 Mã QR Code - Bàn Ăn</h2>
+    <p style="color: #666;">Quét mã QR để khách hàng đặt món trực tiếp</p>
+</div>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-error">
+        ❌ @TempData["Error"]
+    </div>
+}
+
+<div class="qr-grid">
+    @if (Model != null && Model.Any())
+    {
+        @foreach (var ban in Model)
+        {
+            <div class="qr-card">
+                <div class="qr-card-header">
+                    <h3>🪑 Bàn @ban.SoBan</h3>
+                    <span class="badge @(ban.TrangThai == "Trống" ? "badge-success" : "badge-warning")">
+                        @ban.TrangThai
+                    </span>
+                </div>
+                
+                <div class="qr-image">
+                    <!-- Sử dụng API QR Code Generator miễn phí -->
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=@(Url.Action("View", "QrCode", new { id = ban.BanId }, Context.Request.Scheme))" />
+                </div>
+
+                <div class="qr-actions">
+                    <a href="@Url.Action("View", new { id = ban.BanId })" class="btn btn-info btn-sm">
+                        👁️ Xem Chi Tiết
+                    </a>
+                    <a href="https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=@(Url.Action("View", "QrCode", new { id = ban.BanId }, Context.Request.Scheme))" 
+                       download="QR_Ban_@(ban.SoBan).png" 
+                       class="btn btn-success btn-sm">
+                        💾 Tải Xuống
+                    </a>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="empty-state">
+            <p>📭 Chưa có bàn ăn nào. Vui lòng tạo bàn ở menu <strong>Bàn Ăn</strong>.</p>
+            <a href="/BanAn/Create" class="btn btn-primary">➕ Tạo Bàn Mới</a>
+        </div>
+    }
+</div>
+
+<style>
+    .qr-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+    }
+
+    .qr-card {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+    }
+
+    .qr-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    .qr-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    .qr-card-header h3 {
+        margin: 0;
+        font-size: 18px;
+        color: #333;
+    }
+
+    .qr-image {
+        margin: 20px 0;
+        padding: 10px;
+        background: #f9f9f9;
+        border-radius: 8px;
+    }
+
+    .qr-image img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 4px;
+    }
+
+    .qr-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-top: 15px;
+    }
+
+    .badge {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: bold;
+    }
+
+    .badge-success {
+        background: #28a745;
+        color: white;
+    }
+
+    .badge-warning {
+        background: #ffc107;
+        color: #333;
+    }
+
+    .empty-state {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 60px 20px;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    .empty-state p {
+        font-size: 16px;
+        color: #666;
+        margin-bottom: 20px;
+    }
+</style>

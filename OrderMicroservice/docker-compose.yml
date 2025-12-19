@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "YourPassword@123"
+      MSSQL_PID: "Express"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqldata:/var/opt/mssql
+    networks:
+      - order-network
+
+  order-api:
+    build:
+      context: .
+      dockerfile: Order.API/Dockerfile
+    ports:
+      - "5001:8080"
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=mssql;Database=OrderMicroserviceDb;User Id=sa;Password=YourPassword@123;TrustServerCertificate=true;
+      - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      - mssql
+    networks:
+      - order-network
+
+volumes:
+  sqldata:
+
+networks:
+  order-network:
+    driver: bridge

@@ -1,0 +1,49 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"] - Admin Quản Lý Nhà Hàng</title>
+    <link rel="stylesheet" href="~/css/style.css">
+</head>
+<body>
+    <div class="admin-container">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <h2>🍽️ Admin Panel</h2>
+            <ul class="nav-menu">
+                <li><a href="/DonHang" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "DonHang" ? "active" : "")">📋 Đơn Hàng</a></li>
+                <li><a href="/DanhMuc" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "DanhMuc" ? "active" : "")">📂 Danh Mục</a></li>
+                <li><a href="/MonAn" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "MonAn" ? "active" : "")">🍴 Món Ăn</a></li>
+                <li><a href="/BanAn" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "BanAn" ? "active" : "")">🪑 Bàn Ăn</a></li>
+                <li><a href="/QrCode" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "QrCode" ? "active" : "")">📱 QR Codes</a></li>
+            </ul>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <!-- NAVBAR -->
+            <div class="navbar">
+                <h1>@ViewData["Title"]</h1>
+                <div class="user-info">
+                     <span>👤 @(Context.Session.GetString("Username") ?? "Admin")</span>
+                     <form asp-action="Logout" asp-controller="Dangnhap" method="post" style="display:inline;">
+                        <button type="submit" class="btn btn-light btn-sm">Đăng Xuất</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- CONTENT AREA -->
+            <div class="content-area">
+                @RenderBody()
+            </div>
+        </div>
+    </div>
+
+    <!-- ✅ SIGNALR SCRIPTS - THÊM PHẦN NÀY -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script src="~/js/signalr-admin.js"></script>
+    
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

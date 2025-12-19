@@ -1,0 +1,80 @@
+@model DonHangViewModel
+@{
+    ViewData["Title"] = "Chi Tiết Đơn Hàng #" + Model.SoDon;
+}
+
+<div class="card">
+    <div class="card-header">
+        <h2>Chi Tiết Đơn Hàng #@Model.SoDon</h2>
+    </div>
+    <div class="card-body">
+        <div class="form-row">
+            <div>
+                <p><strong>Bàn:</strong> Bàn @Model.SoBan</p>
+                <p><strong>Trạng Thái:</strong> 
+                    <span class="badge @(Model.TrangThai?.ToUpper() == "HOANTHANH" ? "badge-success" : Model.TrangThai?.ToUpper() == "HUY" ? "badge-danger" : "badge-warning")">
+                        @ViewBag.DisplayStatus
+                    </span>
+                </p>
+            </div>
+            <div>
+                <p><strong>Ngày:</strong> @(Model.NgayCapNhat?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</p>
+                <p><strong>Tổng Tiền:</strong> <span style="color: var(--secondary); font-weight: bold;">@Model.TongTien.ToString("N0")đ</span></p>
+            </div>
+        </div>
+
+        <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--light);">
+
+        <h3 style="margin-bottom: 15px;">Chi Tiết Món Ăn</h3>
+
+        @if (Model.ChiTiet != null && Model.ChiTiet.Any())
+        {
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tên Món</th>
+                            <th>Số Lượng</th>
+                            <th>Đơn Giá</th>
+                            <th>Thành Tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var ct in Model.ChiTiet)
+                        {
+                            <tr>
+                                <td>@ct.TenMon</td>
+                                <td>@ct.SoLuong</td>
+                                <td>@ct.DonGia.ToString("N0")đ</td>
+                                <td>@ct.ThanhTien.ToString("N0")đ</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+        <div style="text-align: right; margin-top: 20px; font-size: 18px; font-weight: bold;">
+            Tổng Cộng: @Model.TongTien.ToString("N0")đ
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h3>Cập Nhật Trạng Thái</h3>
+            <form method="post" action="/DonHang/UpdateStatus/@Model.DonId" style="display: flex; gap: 10px; margin-top: 15px;">
+                @Html.AntiForgeryToken()
+                
+                <select name="trangThai" class="form-control" style="flex: 1; padding: 10px;">
+                    <option value="CHOXACNHAN" selected="@(Model.TrangThai?.ToUpper() == "CHOXACNHAN")">Chờ Xác Nhận</option>
+                    <option value="DANGCHUANBI" selected="@(Model.TrangThai?.ToUpper() == "DANGCHUANBI")">Đang Chuẩn Bị</option>
+                    <option value="HOANTHANH" selected="@(Model.TrangThai?.ToUpper() == "HOANTHANH")">Hoàn Thành</option>
+                    <option value="HUY" selected="@(Model.TrangThai?.ToUpper() == "HUY")">Hủy</option>
+                </select>
+                <button type="submit" class="btn btn-success">Cập Nhật</button>
+            </form>
+        </div>
+
+        <div class="btn-group" style="margin-top: 20px;">
+            <a href="/DonHang" class="btn btn-light">← Quay Lại</a>
+        </div>
+    </div>
+</div>
