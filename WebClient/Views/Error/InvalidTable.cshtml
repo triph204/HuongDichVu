@@ -1,0 +1,199 @@
+@{
+    Layout = null;
+    var tableNumber = ViewData["TableNumber"]?.ToString() ?? "không xác định";
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lỗi - Bàn Không Tồn Tại</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style type="text/css">
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .error-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 50px 40px;
+            max-width: 500px;
+            text-align: center;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @@keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .error-icon {
+            font-size: 80px;
+            color: #dc3545;
+            margin-bottom: 20px;
+        }
+
+        .error-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .error-message {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        .table-number {
+            background: #f8f9fa;
+            border-left: 4px solid #dc3545;
+            padding: 15px;
+            margin: 25px 0;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #dc3545;
+        }
+
+        .help-text {
+            font-size: 14px;
+            color: #999;
+            margin: 20px 0;
+            line-height: 1.8;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+            justify-content: center;
+        }
+
+        .btn-back {
+            flex: 1;
+            padding: 12px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-back:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-home {
+            flex: 1;
+            padding: 12px 20px;
+            background: #f8f9fa;
+            color: #667eea;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-home:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .support-info {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px solid #eee;
+        }
+
+        .support-title {
+            font-size: 14px;
+            color: #999;
+            margin-bottom: 10px;
+        }
+
+        .support-contact {
+            font-size: 14px;
+            color: #667eea;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+
+        <h1 class="error-title">Bàn Không Tồn Tại</h1>
+
+        <p class="error-message">
+            Xin lỗi, chúng tôi không thể tìm thấy thông tin bàn của bạn.
+        </p>
+
+        <div class="table-number">
+            <i class="fas fa-chair me-2"></i>Bàn @tableNumber
+        </div>
+
+        <p class="error-message">
+            Bàn này có thể đã bị xóa hoặc số bàn không chính xác.
+        </p>
+
+        <div class="help-text">
+            <strong>Cách khắc phục:</strong>
+            <ul style="text-align: left; margin-top: 10px;">
+                <li>Kiểm tra lại mã QR trên bàn của bạn</li>
+                <li>Quét lại mã QR để truy cập đúng bàn</li>
+                <li>Liên hệ nhân viên nếu có vấn đề</li>
+            </ul>
+        </div>
+
+        <div class="btn-group">
+            <a href="javascript:history.back()" class="btn-back">
+                <i class="fas fa-arrow-left me-2"></i>Quay Lại
+            </a>
+            <a href="/" class="btn-home">
+                <i class="fas fa-home me-2"></i>Trang Chủ
+            </a>
+        </div>
+
+        <div class="support-info">
+            <p class="support-title">Cần hỗ trợ?</p>
+            <p class="support-contact">
+                <i class="fas fa-phone me-2"></i>Gọi: 0123 456 789
+            </p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

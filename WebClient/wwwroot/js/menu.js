@@ -5,12 +5,46 @@ const API_URL = `${API_BASE_URL}/api/Monan`;
 let cart = [];
 let menuData = [];
 
-// ✅ Lấy số bàn từ URL và lưu vào localStorage
-function loadTableNumberFromURL() {
+// ✅ Lấy số bàn từ URL và lưu vào localStorage (bắt buộc có table parameter hoặc localStorage)
+async function loadTableNumberFromURL() {
   const urlParams = new URLSearchParams(window.location.search);
-  const tableNumber = urlParams.get("table");
+  let tableNumber = urlParams.get("table");
 
-  if (tableNumber) {
+  // Nếu không có table trong URL, kiểm tra localStorage
+  if (!tableNumber) {
+    tableNumber = localStorage.getItem("tableNumber");
+    console.log("🔍 Số bàn từ localStorage:", tableNumber);
+  }
+
+  // Nếu không có table parameter và không có localStorage, redirect tới trang lỗi
+  if (!tableNumber) {
+    console.error("❌ Không có table parameter trong URL và localStorage");
+    window.location.href = `/Error/InvalidTable?table=không_xác_định`;
+    return;
+  }
+
+  // Có table thì validate
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/BanAn`);
+    if (response.ok) {
+      const tables = await response.json();
+      const tableExists = tables.some(
+        (t) =>
+          t.soBan === tableNumber ||
+          t.soBan === `Bàn ${tableNumber}` ||
+          t.id === parseInt(tableNumber)
+      );
+
+      if (!tableExists) {
+        // Bàn không tồn tại, redirect đến trang lỗi
+        console.error("❌ Bàn không tồn tại:", tableNumber);
+        window.location.href = `/Error/InvalidTable?table=${encodeURIComponent(
+          tableNumber
+        )}`;
+        return;
+      }
+    }
+
     localStorage.setItem("tableNumber", tableNumber);
     console.log("✅ Đã lưu số bàn:", tableNumber);
 
@@ -19,25 +53,25 @@ function loadTableNumberFromURL() {
     if (headerTableNumber) {
       headerTableNumber.textContent = `Bàn ${tableNumber}`;
     }
-  } else {
-    // Nếu không có trong URL, lấy từ localStorage
-    const savedTableNumber = localStorage.getItem("tableNumber");
-    if (savedTableNumber) {
-      const headerTableNumber = document.getElementById("headerTableNumber");
-      if (headerTableNumber) {
-        headerTableNumber.textContent = `Bàn ${savedTableNumber}`;
-      }
+  } catch (error) {
+    console.error("❌ Lỗi kiểm tra bàn:", error);
+    // Nếu không kết nối được, vẫn cho qua (để tránh lỗi network)
+    localStorage.setItem("tableNumber", tableNumber);
+    const headerTableNumber = document.getElementById("headerTableNumber");
+    if (headerTableNumber) {
+      headerTableNumber.textContent = `Bàn ${tableNumber}`;
     }
   }
 }
 
 // Khởi tạo
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", async function () {
   // ✅ Lấy số bàn từ URL trước
-  loadTableNumberFromURL();
+  await loadTableNumberFromURL();
   loadCartFromStorage();
   loadMenu();
   updateCartCount();
+  updateLinksWithTableParam(); // Cập nhật các link với table parameter
 
   // Tìm kiếm
   document
@@ -46,6 +80,37 @@ document.addEventListener("DOMContentLoaded", function () {
       filterMenu(e.target.value);
     });
 });
+
+// ✅ Cập nhật tất cả các link và onclick với table parameter
+function updateLinksWithTableParam() {
+  const tableNumber = localStorage.getItem("tableNumber");
+  if (!tableNumber) return;
+
+  // Cập nhật các thẻ <a>
+  document.querySelectorAll("a[href]").forEach((link) => {
+    const href = link.getAttribute("href");
+    if (href && href.startsWith("/") && !href.includes("?table=")) {
+      link.setAttribute("href", `${href}?table=${tableNumber}`);
+    }
+  });
+
+  // Cập nhật các button với onclick
+  document.querySelectorAll("[onclick]").forEach((el) => {
+    const onclick = el.getAttribute("onclick");
+    if (onclick && onclick.includes("window.location.href")) {
+      const newOnclick = onclick.replace(
+        /window\.location\.href='([^']+)'/g,
+        (match, url) => {
+          if (url.startsWith("/") && !url.includes("?table=")) {
+            return `window.location.href='${url}?table=${tableNumber}'`;
+          }
+          return match;
+        }
+      );
+      el.setAttribute("onclick", newOnclick);
+    }
+  });
+}
 
 // Load giỏ hàng từ localStorage
 function loadCartFromStorage() {

@@ -6,7 +6,6 @@ using Order.Infrastructure.Data;
 using Order.Infrastructure.Repositories;
 using Order.Application.Services;
 using Order.API.Hubs;
-using Order.Infrastructure.Migrations;
 using Order.Infrastructure.Seeds;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
@@ -48,7 +47,7 @@ builder.Services.AddSwaggerGen(c =>
     {
         Title = "Order Microservice API",
         Version = "v1",
-        Description = "Microservice qu?n lý ??n hàng nhà hàng"
+        Description = "Microservice qu?n lï¿½ ??n hï¿½ng nhï¿½ hï¿½ng"
     });
 });
 

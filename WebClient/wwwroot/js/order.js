@@ -9,20 +9,89 @@ let currentOrders = [];
 let currentFilter = "all";
 
 // ===== KHỞI TẠO KHI LOAD PAGE =====
-document.addEventListener("DOMContentLoaded", function () {
-  forceLoadTableFromURL();
+document.addEventListener("DOMContentLoaded", async function () {
+  await forceLoadTableFromURL(); // Chờ load xong số bàn
   initSignalR();
   loadOrders();
+  updateLinksWithTableParam(); // Cập nhật các link với table parameter
 });
 
-// ===== LẤY SỐ BÀN TỪ URL =====
-function forceLoadTableFromURL() {
+// ✅ Cập nhật tất cả các link và onclick với table parameter
+function updateLinksWithTableParam() {
+  const tableNumber = localStorage.getItem("tableNumber");
+  if (!tableNumber) return;
+
+  // Cập nhật các thẻ <a>
+  document.querySelectorAll("a[href]").forEach((link) => {
+    const href = link.getAttribute("href");
+    if (href && href.startsWith("/") && !href.includes("?table=")) {
+      link.setAttribute("href", `${href}?table=${tableNumber}`);
+    }
+  });
+
+  // Cập nhật các button với onclick
+  document.querySelectorAll("[onclick]").forEach((el) => {
+    const onclick = el.getAttribute("onclick");
+    if (onclick && onclick.includes("window.location.href")) {
+      const newOnclick = onclick.replace(
+        /window\.location\.href='([^']+)'/g,
+        (match, url) => {
+          if (url.startsWith("/") && !url.includes("?table=")) {
+            return `window.location.href='${url}?table=${tableNumber}'`;
+          }
+          return match;
+        }
+      );
+      el.setAttribute("onclick", newOnclick);
+    }
+  });
+}
+
+// ===== LẤY SỐ BÀN TỪ URL (bắt buộc có table parameter hoặc localStorage) =====
+async function forceLoadTableFromURL() {
   const urlParams = new URLSearchParams(window.location.search);
-  const tableFromURL = urlParams.get("table");
+  let tableFromURL = urlParams.get("table");
 
   console.log("🔍 Orders: Đang load số bàn từ URL:", tableFromURL);
 
-  if (tableFromURL) {
+  // Nếu không có table trong URL, kiểm tra localStorage
+  if (!tableFromURL) {
+    tableFromURL = localStorage.getItem("tableNumber");
+    console.log("🔍 Orders: Số bàn từ localStorage:", tableFromURL);
+  }
+
+  // Bắt buộc phải có table parameter hoặc localStorage
+  if (!tableFromURL) {
+    console.error(
+      "❌ Orders: Không có table parameter trong URL và localStorage"
+    );
+    window.location.href = `/Error/InvalidTable?table=không_xác_định`;
+    return;
+  }
+
+  // Có table thì validate
+  try {
+    // Kiểm tra bàn có tồn tại trong database không
+    const response = await fetch(`${API_BASE_URL}/api/BanAn`);
+    if (response.ok) {
+      const tables = await response.json();
+      const tableExists = tables.some(
+        (t) =>
+          t.soBan === tableFromURL ||
+          t.soBan === `Bàn ${tableFromURL}` ||
+          t.id === parseInt(tableFromURL)
+      );
+
+      if (!tableExists) {
+        // Bàn không tồn tại, redirect đến trang lỗi
+        console.error("❌ Orders: Bàn không tồn tại:", tableFromURL);
+        window.location.href = `/Error/InvalidTable?table=${encodeURIComponent(
+          tableFromURL
+        )}`;
+        return;
+      }
+    }
+
     localStorage.removeItem("tableNumber");
     localStorage.removeItem("tableDisplay");
     localStorage.setItem("tableNumber", tableFromURL);
@@ -35,18 +104,21 @@ function forceLoadTableFromURL() {
       headerTableNumber.textContent = `Bàn ${tableFromURL}`;
     }
 
-    console.log(`✅ Orders: Đã set bàn từ URL: Bàn ${tableFromURL}`);
-  } else {
-    const savedTableNumber = localStorage.getItem("tableNumber");
-    currentTableNumber = savedTableNumber;
+    console.log(`✅ Orders: Đã set bàn: Bàn ${tableFromURL}`);
+  } catch (error) {
+    console.error("❌ Orders: Lỗi kiểm tra bàn:", error);
+    // Nếu không kết nối được, vẫn cho qua
+    localStorage.removeItem("tableNumber");
+    localStorage.removeItem("tableDisplay");
+    localStorage.setItem("tableNumber", tableFromURL);
+    localStorage.setItem("tableDisplay", `Bàn ${tableFromURL}`);
+
+    currentTableNumber = tableFromURL;
 
     const headerTableNumber = document.getElementById("headerTableNumber");
     if (headerTableNumber) {
-      headerTableNumber.textContent = savedTableNumber
-        ? `Bàn ${savedTableNumber}`
-        : "Bàn --";
+      headerTableNumber.textContent = `Bàn ${tableFromURL}`;
     }
-    console.log("⚠️ Orders: Không có số bàn trong URL");
   }
 }
 

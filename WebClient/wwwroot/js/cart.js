@@ -6,28 +6,95 @@ const API_TABLE_URL = `${API_BASE_URL}/api/BanAn`;
 let cart = [];
 
 // Khởi tạo
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", async function () {
   console.log("🔍 Đang khởi tạo giỏ hàng...");
   loadCartFromStorage();
-  forceLoadTableFromURL(); // ⚠️ SỬA: Dùng hàm mới
+  await forceLoadTableFromURL(); // Chờ load xong số bàn
   renderCart();
+  updateLinksWithTableParam(); // Cập nhật các link với table parameter
 });
 
-// ⚠️ HÀM MỚI: Luôn load số bàn từ URL, không dùng localStorage cũ
-function forceLoadTableFromURL() {
+// ✅ Cập nhật tất cả các link và onclick với table parameter
+function updateLinksWithTableParam() {
+  const tableNumber = localStorage.getItem("tableNumber");
+  if (!tableNumber) return;
+
+  // Cập nhật các thẻ <a>
+  document.querySelectorAll("a[href]").forEach((link) => {
+    const href = link.getAttribute("href");
+    if (href && href.startsWith("/") && !href.includes("?table=")) {
+      link.setAttribute("href", `${href}?table=${tableNumber}`);
+    }
+  });
+
+  // Cập nhật các button với onclick
+  document.querySelectorAll("[onclick]").forEach((el) => {
+    const onclick = el.getAttribute("onclick");
+    if (onclick && onclick.includes("window.location.href")) {
+      const newOnclick = onclick.replace(
+        /window\.location\.href='([^']+)'/g,
+        (match, url) => {
+          if (url.startsWith("/") && !url.includes("?table=")) {
+            return `window.location.href='${url}?table=${tableNumber}'`;
+          }
+          return match;
+        }
+      );
+      el.setAttribute("onclick", newOnclick);
+    }
+  });
+}
+
+// ⚠️ HÀM MỚI: Bắt buộc có table parameter hoặc localStorage, validate bàn
+async function forceLoadTableFromURL() {
   const urlParams = new URLSearchParams(window.location.search);
-  const tableFromURL = urlParams.get("table");
+  let tableFromURL = urlParams.get("table");
 
   console.log("🔍 URL hiện tại:", window.location.href);
   console.log("🔍 Số bàn từ URL:", tableFromURL);
 
-  if (tableFromURL) {
+  // Nếu không có table trong URL, kiểm tra localStorage
+  if (!tableFromURL) {
+    tableFromURL = localStorage.getItem("tableNumber");
+    console.log("🔍 Số bàn từ localStorage:", tableFromURL);
+  }
+
+  // Bắt buộc phải có table parameter hoặc localStorage
+  if (!tableFromURL) {
+    console.error("❌ Không có table parameter trong URL và localStorage");
+    window.location.href = `/Error/InvalidTable?table=không_xác_định`;
+    return;
+  }
+
+  // Có table parameter thì validate
+  try {
+    // Kiểm tra bàn có tồn tại trong database không
+    const response = await fetch(API_TABLE_URL);
+    if (response.ok) {
+      const tables = await response.json();
+      const tableExists = tables.some(
+        (t) =>
+          t.soBan === tableFromURL ||
+          t.soBan === `Bàn ${tableFromURL}` ||
+          t.id === parseInt(tableFromURL)
+      );
+
+      if (!tableExists) {
+        // Bàn không tồn tại, redirect đến trang lỗi
+        console.error("❌ Bàn không tồn tại:", tableFromURL);
+        window.location.href = `/Error/InvalidTable?table=${encodeURIComponent(
+          tableFromURL
+        )}`;
+        return;
+      }
+    }
+
     // Clear localStorage cũ và set giá trị mới
     localStorage.removeItem("tableNumber");
     localStorage.removeItem("tableDisplay");
     localStorage.removeItem("tableId");
 
-    // Lưu số bàn từ URL
+    // Lưu số bàn
     localStorage.setItem("tableNumber", tableFromURL);
     localStorage.setItem("tableDisplay", `Bàn ${tableFromURL}`);
 
@@ -37,13 +104,25 @@ function forceLoadTableFromURL() {
       tableElement.textContent = `Bàn ${tableFromURL}`;
     }
 
-    console.log(`✅ Đã set bàn từ URL: Bàn ${tableFromURL}`);
+    console.log(`✅ Đã set bàn: Bàn ${tableFromURL}`);
 
     // Sau đó mới load thông tin đầy đủ từ server
     loadTableInfo();
-  } else {
-    // Nếu không có số bàn trong URL, dùng mặc định
-    console.warn("⚠️ Không có số bàn trong URL, dùng mặc định");
+  } catch (error) {
+    console.error("❌ Lỗi kiểm tra bàn:", error);
+    // Nếu không kết nối được, vẫn cho qua (để tránh lỗi network)
+    localStorage.removeItem("tableNumber");
+    localStorage.removeItem("tableDisplay");
+    localStorage.removeItem("tableId");
+
+    localStorage.setItem("tableNumber", tableFromURL);
+    localStorage.setItem("tableDisplay", `Bàn ${tableFromURL}`);
+
+    const tableElement = document.getElementById("tableNumber");
+    if (tableElement) {
+      tableElement.textContent = `Bàn ${tableFromURL}`;
+    }
+
     loadTableInfo();
   }
 }
