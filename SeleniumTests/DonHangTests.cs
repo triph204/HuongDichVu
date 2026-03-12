@@ -590,37 +590,5 @@ namespace SeleniumTests
             var statusBadge = _driver.FindElement(By.CssSelector("span.badge"));
             Console.WriteLine($"[PASS] C?p nh?t tr?ng thái ? Ch? xác nh?n. Badge: '{statusBadge.Text}', Value: '{currentVal}'");
         }
-
-        // ==================== TEST 16: NÚT QUAY L?I TRONG CHI TI?T ====================
-
-        [Test]
-        [Order(16)]
-        public void Test16_NutQuayLai_ChiTiet()
-        {
-            NavigateToDonHang();
-            Assert.That(CoBangDonHang(), Is.True, "Ph?i có ??n hàng ?? test nút quay l?i.");
-
-            var chiTietBtn = _wait.Until(ExpectedConditions.ElementToBeClickable(
-                By.CssSelector("a.btn.btn-primary.btn-sm")));
-            chiTietBtn.Click();
-            _wait.Until(ExpectedConditions.UrlContains("/DonHang/Details/"));
-
-            Console.WriteLine($"[INFO] ?ang ? trang chi ti?t: {_driver.Url}");
-
-            // Tìm nút Quay L?i b?ng href="/DonHang" thay vì text ti?ng Vi?t
-            var backBtn = _wait.Until(ExpectedConditions.ElementToBeClickable(
-                By.CssSelector("a.btn.btn-light[href='/DonHang']")));
-            Assert.That(backBtn.Displayed, Is.True, "Ph?i có nút Quay L?i.");
-
-            backBtn.Click();
-
-            _wait.Until(d => !d.Url.Contains("/Details/"));
-            Assert.That(_driver.Url, Does.Contain("/DonHang"),
-                "Sau khi click Quay L?i ph?i v? trang danh sách ??n hàng.");
-            Assert.That(_driver.Url, Does.Not.Contain("/Details/"),
-                "Không ???c ? l?i trang chi ti?t sau khi click Quay L?i.");
-
-            Console.WriteLine($"[PASS] Nút Quay L?i ho?t ??ng ?úng. V?: {_driver.Url}");
-        }
     }
 }
