@@ -17,6 +17,7 @@ namespace SeleniumTests
         private const string LoginUrl = BaseUrl + "/Dangnhap/Login";
         private const string AdminUsername = "admin";
         private const string AdminPassword = "admin123";
+        private const int Delay = 1000;
 
         [SetUp]
         public void SetUp()
@@ -47,6 +48,7 @@ namespace SeleniumTests
         {
             _driver.Navigate().GoToUrl(LoginUrl);
             _wait.Until(ExpectedConditions.ElementIsVisible(By.Name("username")));
+            System.Threading.Thread.Sleep(Delay);
         }
 
         private void FillLoginForm(string username, string password)
@@ -54,16 +56,19 @@ namespace SeleniumTests
             var usernameInput = _driver.FindElement(By.Name("username"));
             usernameInput.Clear();
             usernameInput.SendKeys(username);
+            System.Threading.Thread.Sleep(Delay);
 
             var passwordInput = _driver.FindElement(By.Name("password"));
             passwordInput.Clear();
             passwordInput.SendKeys(password);
+            System.Threading.Thread.Sleep(Delay);
         }
 
         private void ClickLoginButton()
         {
             var loginBtn = _driver.FindElement(By.CssSelector("button[type='submit'].btn-primary"));
             loginBtn.Click();
+            System.Threading.Thread.Sleep(Delay);
         }
 
         // ==================== TEST 1: ĐĂNG NHẬP THÀNH CÔNG ====================

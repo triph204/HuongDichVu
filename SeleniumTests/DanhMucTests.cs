@@ -1,4 +1,4 @@
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
@@ -20,11 +20,12 @@ namespace SeleniumTests
         private const string AdminUsername = "admin";
         private const string AdminPassword = "admin123";
 
-        // T�n danh m?c d�ng xuy�n su?t c�c test
+        // Tên danh mục dùng xuyên suốt các test
         private const string TenDanhMucMoi  = "TEST_DM_Selenium";
         private const string TenDanhMucSua  = "TEST_DM_Selenium_EDITED";
-        private const string MoTaMoi        = "Mo ta tu dong tao boi Selenium";
-        private const string MoTaSua        = "Mo ta da duoc chinh sua boi Selenium";
+        private const string MoTaMoi        = "Mô tả tự động tạo bởi Selenium";
+        private const string MoTaSua        = "Mô tả đã được chỉnh sửa bởi Selenium";
+        private const int Delay = 1000;
 
         // ==================== SETUP / TEARDOWN ====================
 
@@ -50,23 +51,30 @@ namespace SeleniumTests
 
         // ==================== HELPER METHODS ====================
 
+        private void Pause() => System.Threading.Thread.Sleep(Delay);
+
         private void DangNhap()
         {
             _driver.Navigate().GoToUrl(LoginUrl);
             _wait.Until(ExpectedConditions.ElementIsVisible(By.Name("username")));
+            Pause();
             _driver.FindElement(By.Name("username")).SendKeys(AdminUsername);
+            Pause();
             _driver.FindElement(By.Name("password")).SendKeys(AdminPassword);
+            Pause();
             _driver.FindElement(By.CssSelector("button[type='submit'].btn-primary")).Click();
             _wait.Until(ExpectedConditions.UrlContains("/DonHang"));
+            Pause();
         }
 
         private void NavigateToDanhMuc()
         {
             _driver.Navigate().GoToUrl(DanhMucUrl);
             _wait.Until(ExpectedConditions.ElementIsVisible(By.CssSelector(".card")));
+            Pause();
         }
 
-        // T�m d�ng trong b?ng theo t�n danh m?c
+        // Tìm dòng trong bảng theo tên danh mục
         private IWebElement? TimDongTheoTen(string tenDanhMuc)
         {
             var rows = _driver.FindElements(By.CssSelector("table tbody tr"));
@@ -74,7 +82,7 @@ namespace SeleniumTests
                                          && r.FindElements(By.TagName("td"))[0].Text.Trim() == tenDanhMuc);
         }
 
-        // X�a danh m?c theo t�n n?u t?n t?i (d?n d?p d? li?u test)
+        // Xóa danh mục theo tên nếu tồn tại (dọn dẹp dữ liệu test)
         private void XoaNeuTonTai(string tenDanhMuc)
         {
             NavigateToDanhMuc();
@@ -85,29 +93,32 @@ namespace SeleniumTests
                 ((IJavaScriptExecutor)_driver).ExecuteScript(
                     "arguments[0].removeAttribute('onclick');", xoaBtn);
                 xoaBtn.Click();
-                // Ch? redirect v? danh s�ch v� trang load xong
                 _wait.Until(d => !d.Url.Contains("/Delete/"));
                 _wait.Until(ExpectedConditions.ElementIsVisible(By.CssSelector(".card")));
-                System.Threading.Thread.Sleep(300);
+                Pause();
             }
         }
 
-        // Helper t?o danh m?c m?i v� ch? redirect th�nh c�ng
+        // Helper tạo danh mục mới và chờ redirect thành công
         private void TaoDanhMuc(string ten, string moTa)
         {
             _driver.Navigate().GoToUrl(DanhMucUrl + "/Create");
             _wait.Until(ExpectedConditions.ElementIsVisible(
                 By.CssSelector("input[name='TenDanhMuc']")));
+            Pause();
             _driver.FindElement(By.CssSelector("input[name='TenDanhMuc']")).Clear();
             _driver.FindElement(By.CssSelector("input[name='TenDanhMuc']")).SendKeys(ten);
+            Pause();
             _driver.FindElement(By.CssSelector("textarea[name='MoTa']")).Clear();
             _driver.FindElement(By.CssSelector("textarea[name='MoTa']")).SendKeys(moTa);
+            Pause();
             _driver.FindElement(By.CssSelector("button[type='submit'].btn-success")).Click();
             _wait.Until(d => !d.Url.Contains("/Create"));
+            Pause();
             NavigateToDanhMuc();
         }
 
-        // ==================== TEST 1: XEM DANH S�CH DANH M?C ====================
+        // ==================== TEST 1: XEM DANH SÁCH DANH MỤC ====================
 
         [Test]
         [Order(1)]
@@ -116,89 +127,94 @@ namespace SeleniumTests
             // Arrange
             NavigateToDanhMuc();
 
-            // Assert - URL ?�ng
+            // Assert - URL đúng
             Assert.That(_driver.Url, Does.Contain("/DanhMuc"),
-                "Phai dieu huong den trang /DanhMuc.");
+                "Phải điều hướng đến trang /DanhMuc.");
 
-            // Assert - C� n�t Th�m Danh M?c
+            // Assert - Có nút Thêm Danh Mục
             var themBtn = _driver.FindElement(By.CssSelector("a[href='/DanhMuc/Create']"));
-            Assert.That(themBtn.Displayed, Is.True, "Phai co nut 'Them Danh Muc'.");
+            Assert.That(themBtn.Displayed, Is.True, "Phải có nút 'Thêm Danh Mục'.");
 
-            // Assert - C� b?ng ho?c th�ng b�o r?ng
+            // Assert - Có bảng hoặc thông báo rỗng
             bool coNoiDung =
                 _driver.FindElements(By.CssSelector("table tbody tr")).Count > 0 ||
                 _driver.FindElements(By.CssSelector(".no-data")).Count > 0;
-            Assert.That(coNoiDung, Is.True, "Trang phai hien thi bang danh muc hoac thong bao rong.");
+            Assert.That(coNoiDung, Is.True, "Trang phải hiển thị bảng danh mục hoặc thông báo rỗng.");
 
-            // Assert - B?ng c� ?? 3 c?t: T�n, M� t?, H�nh ??ng
+            // Assert - Bảng có đủ 3 cột: Tên, Mô tả, Hành động
             if (_driver.FindElements(By.CssSelector("table thead tr th")).Count > 0)
             {
                 var headers = _driver.FindElements(By.CssSelector("table thead tr th"));
-                Assert.That(headers.Count, Is.EqualTo(3), "Bang phai co 3 cot.");
+                Assert.That(headers.Count, Is.EqualTo(3), "Bảng phải có 3 cột.");
             }
 
-            Console.WriteLine($"[PASS] Xem danh sach danh muc. URL: {_driver.Url}");
+            Pause();
+            Console.WriteLine($"[PASS] Xem danh sách danh mục. URL: {_driver.Url}");
         }
 
-        // ==================== TEST 2: TH�M DANH M?C TH�NH C�NG ====================
+        // ==================== TEST 2: THÊM DANH MỤC THÀNH CÔNG ====================
 
         [Test]
         [Order(2)]
         public void Test02_ThemDanhMuc_ThanhCong()
         {
-            // D?n d? li?u c? n?u c�n
+            // Dọn dữ liệu cũ nếu còn
             XoaNeuTonTai(TenDanhMucMoi);
             XoaNeuTonTai(TenDanhMucSua);
 
             // Arrange
             NavigateToDanhMuc();
 
-            // Act - Click n�t Th�m Danh M?c
+            // Act - Click nút Thêm Danh Mục
             var themBtn = _wait.Until(ExpectedConditions.ElementToBeClickable(
                 By.CssSelector("a[href='/DanhMuc/Create']")));
             themBtn.Click();
 
             _wait.Until(ExpectedConditions.UrlContains("/DanhMuc/Create"));
+            Pause();
             Assert.That(_driver.Url, Does.Contain("/DanhMuc/Create"),
-                "Phai chuyen sang trang tao danh muc.");
+                "Phải chuyển sang trang tạo danh mục.");
 
-            // Nh?p d? li?u
+            // Nhập dữ liệu
             var tenInput = _wait.Until(ExpectedConditions.ElementIsVisible(
                 By.CssSelector("input[name='TenDanhMuc']")));
             tenInput.Clear();
             tenInput.SendKeys(TenDanhMucMoi);
+            Pause();
 
             var moTaInput = _driver.FindElement(By.CssSelector("textarea[name='MoTa']"));
             moTaInput.Clear();
             moTaInput.SendKeys(MoTaMoi);
+            Pause();
 
-            // Click L?u
+            // Click Lưu
             _driver.FindElement(By.CssSelector("button[type='submit'].btn-success")).Click();
 
-            // Ch? redirect v? danh s�ch (t?i ?a 10 gi�y)
             _wait.Until(d => !d.Url.Contains("/Create"));
+            Pause();
 
-            // Assert - ?� r?i trang Create
+            // Assert - Đã rời trang Create
             Assert.That(_driver.Url, Does.Not.Contain("/Create"),
-                "Sau khi luu phai redirect ve trang danh sach.");
+                "Sau khi lưu phải redirect về trang danh sách.");
 
-            // Reload l?i ?? ch?c ch?n d? li?u m?i nh?t
+            // Reload lại để chắc chắn dữ liệu mới nhất
             NavigateToDanhMuc();
 
-            // Assert - Danh m?c m?i xu?t hi?n trong b?ng
+            // Assert - Danh mục mới xuất hiện trong bảng
             var dongMoi = TimDongTheoTen(TenDanhMucMoi);
             Assert.That(dongMoi, Is.Not.Null,
-                $"Danh muc '{TenDanhMucMoi}' phai xuat hien trong bang sau khi them.");
+                $"Danh mục '{TenDanhMucMoi}' phải xuất hiện trong bảng sau khi thêm.");
 
-            // Assert - M� t? ?�ng
+            // Assert - Mô tả đúng
             var cells = dongMoi!.FindElements(By.TagName("td"));
             Assert.That(cells[1].Text.Trim(), Is.EqualTo(MoTaMoi),
-                "Mo ta danh muc phai khop voi gia tri da nhap.");
+                "Mô tả danh mục phải khớp với giá trị đã nhập.");
 
-            Console.WriteLine($"[PASS] Them danh muc thanh cong: '{TenDanhMucMoi}'");
+            Pause();
+            Console.WriteLine($"[PASS] Thêm danh mục thành công: '{TenDanhMucMoi}'");
         }
 
-        // ==================== TEST 3: TH�M DANH M?C B? TR?NG T�N ====================
+        // ==================== TEST 3: THÊM DANH MỤC BỎ TRỐNG TÊN ====================
 
         [Test]
         [Order(3)]
@@ -211,29 +227,32 @@ namespace SeleniumTests
             themBtn.Click();
 
             _wait.Until(ExpectedConditions.UrlContains("/DanhMuc/Create"));
+            Pause();
 
-            // Act - Kh�ng nh?p t�n, ch? nh?p m� t? r?i submit
+            // Act - Không nhập tên, chỉ nhập mô tả rồi submit
             var moTaInput = _driver.FindElement(By.CssSelector("textarea[name='MoTa']"));
-            moTaInput.SendKeys("Mo ta khong co ten");
+            moTaInput.SendKeys("Mô tả không có tên");
+            Pause();
 
             _driver.FindElement(By.CssSelector("button[type='submit'].btn-success")).Click();
 
-            System.Threading.Thread.Sleep(1000);
+            Pause();
 
-            // Assert - Kh�ng ???c redirect v? danh s�ch (HTML5 required ch?n ho?c v?n ? trang Create)
+            // Assert - Không được redirect về danh sách
             Assert.That(_driver.Url, Does.Not.Contain("/DanhMuc").Or.Contain("/Create"),
-                "Khi bo trong ten phai o lai trang Create.");
+                "Khi bỏ trống tên phải ở lại trang Create.");
 
-            // Ki?m tra HTML5 validation tr�n input required
+            // Kiểm tra HTML5 validation trên input required
             var tenInput = _driver.FindElement(By.CssSelector("input[name='TenDanhMuc']"));
             var isInvalid = (bool)((IJavaScriptExecutor)_driver)
                 .ExecuteScript("return !arguments[0].validity.valid;", tenInput);
-            Assert.That(isInvalid, Is.True, "Input TenDanhMuc phai bi HTML5 validation khi bo trong.");
+            Assert.That(isInvalid, Is.True, "Input TenDanhMuc phải bị HTML5 validation khi bỏ trống.");
 
-            Console.WriteLine("[PASS] Bo trong ten: Khong the them danh muc, bi ch?n boi HTML5 required.");
+            Pause();
+            Console.WriteLine("[PASS] Bỏ trống tên: Không thể thêm danh mục, bị chặn bởi HTML5 required.");
         }
 
-        // ==================== TEST 4: XEM TRANG S?A DANH M?C ====================
+        // ==================== TEST 4: XEM TRANG SỬA DANH MỤC ====================
 
         [Test]
         [Order(4)]
@@ -241,45 +260,48 @@ namespace SeleniumTests
         {
             NavigateToDanhMuc();
 
-            // Ph?i c� �t nh?t 1 danh m?c
+            // Phải có ít nhất 1 danh mục
             Assert.That(_driver.FindElements(By.CssSelector("table tbody tr")).Count,
-                Is.GreaterThan(0), "Phai co danh muc de test trang sua.");
+                Is.GreaterThan(0), "Phải có danh mục để test trang sửa.");
 
-            // Act - Click n�t S?a ??u ti�n
+            // Act - Click nút Sửa đầu tiên
             var suaBtn = _wait.Until(ExpectedConditions.ElementToBeClickable(
                 By.CssSelector("a.btn-primary.btn-sm")));
             string editHref = suaBtn.GetDomProperty("href") ?? "";
             suaBtn.Click();
 
-            // Assert - Chuy?n sang trang Edit
             _wait.Until(ExpectedConditions.UrlContains("/DanhMuc/Edit/"));
-            Assert.That(_driver.Url, Does.Contain("/DanhMuc/Edit/"),
-                "Phai chuyen sang trang sua danh muc.");
+            Pause();
 
-            // Assert - Form c� input TenDanhMuc v� textarea MoTa
+            // Assert - Chuyển sang trang Edit
+            Assert.That(_driver.Url, Does.Contain("/DanhMuc/Edit/"),
+                "Phải chuyển sang trang sửa danh mục.");
+
+            // Assert - Form có input TenDanhMuc và textarea MoTa
             var tenInput = _wait.Until(ExpectedConditions.ElementIsVisible(
                 By.CssSelector("input[name='TenDanhMuc']")));
-            Assert.That(tenInput.Displayed, Is.True, "Phai co o nhap TenDanhMuc.");
+            Assert.That(tenInput.Displayed, Is.True, "Phải có ô nhập TenDanhMuc.");
 
             var moTaInput = _driver.FindElement(By.CssSelector("textarea[name='MoTa']"));
-            Assert.That(moTaInput.Displayed, Is.True, "Phai co o nhap MoTa.");
+            Assert.That(moTaInput.Displayed, Is.True, "Phải có ô nhập MoTa.");
 
-            // Assert - Input ?� c� gi� tr? s?n (load t? DB)
+            // Assert - Input đã có giá trị sẵn (load từ DB)
             string tenHienTai = tenInput.GetDomProperty("value") ?? "";
             Assert.That(tenHienTai.Length, Is.GreaterThan(0),
-                "O nhap TenDanhMuc phai co gia tri san tu DB.");
+                "Ô nhập TenDanhMuc phải có giá trị sẵn từ DB.");
 
-            // Assert - C� n�t C?p Nh?t v� H?y
+            // Assert - Có nút Cập Nhật và Hủy
             var capNhatBtn = _driver.FindElement(By.CssSelector("button[type='submit'].btn-success"));
-            Assert.That(capNhatBtn.Displayed, Is.True, "Phai co nut 'Cap Nhat'.");
+            Assert.That(capNhatBtn.Displayed, Is.True, "Phải có nút 'Cập Nhật'.");
 
             var huyBtn = _driver.FindElement(By.CssSelector("a.btn-light[href='/DanhMuc']"));
-            Assert.That(huyBtn.Displayed, Is.True, "Phai co nut 'Huy'.");
+            Assert.That(huyBtn.Displayed, Is.True, "Phải có nút 'Hủy'.");
 
-            Console.WriteLine($"[PASS] Xem trang sua danh muc. URL: {_driver.Url}, Ten hien tai: '{tenHienTai}'");
+            Pause();
+            Console.WriteLine($"[PASS] Xem trang sửa danh mục. URL: {_driver.Url}, Tên hiện tại: '{tenHienTai}'");
         }
 
-        // ==================== TEST 5: S?A DANH M?C TH�NH C�NG ====================
+        // ==================== TEST 5: SỬA DANH MỤC THÀNH CÔNG ====================
 
         [Test]
         [Order(5)]
@@ -289,47 +311,52 @@ namespace SeleniumTests
             XoaNeuTonTai(TenDanhMucSua);
             TaoDanhMuc(TenDanhMucMoi, MoTaMoi);
 
-            // T�m v� click n�t S?a c?a danh m?c test
+            // Tìm và click nút Sửa của danh mục test
             var dongTest = TimDongTheoTen(TenDanhMucMoi);
-            Assert.That(dongTest, Is.Not.Null, $"Phai tim thay danh muc '{TenDanhMucMoi}' de sua.");
+            Assert.That(dongTest, Is.Not.Null, $"Phải tìm thấy danh mục '{TenDanhMucMoi}' để sửa.");
 
             dongTest!.FindElement(By.CssSelector("a.btn-primary")).Click();
             _wait.Until(ExpectedConditions.UrlContains("/DanhMuc/Edit/"));
+            Pause();
 
-            // Act - X�a t�n c?, nh?p t�n m?i
+            // Act - Xóa tên cũ, nhập tên mới
             var tenInput = _wait.Until(ExpectedConditions.ElementIsVisible(
                 By.CssSelector("input[name='TenDanhMuc']")));
             tenInput.Clear();
             tenInput.SendKeys(TenDanhMucSua);
+            Pause();
 
             var moTaInput = _driver.FindElement(By.CssSelector("textarea[name='MoTa']"));
             moTaInput.Clear();
             moTaInput.SendKeys(MoTaSua);
+            Pause();
 
             _driver.FindElement(By.CssSelector("button[type='submit'].btn-success")).Click();
 
-            // Ch? redirect v? danh s�ch
             _wait.Until(d => !d.Url.Contains("/Edit/"));
-            NavigateToDanhMuc();
+            Pause();
 
             Assert.That(_driver.Url, Does.Not.Contain("/Edit/"),
-                "Sau khi cap nhat phai redirect ve trang danh sach.");
+                "Sau khi cập nhật phải redirect về trang danh sách.");
+
+            NavigateToDanhMuc();
 
             var dongSua = TimDongTheoTen(TenDanhMucSua);
             Assert.That(dongSua, Is.Not.Null,
-                $"Danh muc '{TenDanhMucSua}' phai xuat hien sau khi sua.");
+                $"Danh mục '{TenDanhMucSua}' phải xuất hiện sau khi sửa.");
 
             var cells = dongSua!.FindElements(By.TagName("td"));
             Assert.That(cells[1].Text.Trim(), Is.EqualTo(MoTaSua),
-                "Mo ta danh muc phai duoc cap nhat dung.");
+                "Mô tả danh mục phải được cập nhật đúng.");
 
             Assert.That(TimDongTheoTen(TenDanhMucMoi), Is.Null,
-                $"Ten cu '{TenDanhMucMoi}' khong duoc ton tai sau khi sua.");
+                $"Tên cũ '{TenDanhMucMoi}' không được tồn tại sau khi sửa.");
 
-            Console.WriteLine($"[PASS] Sua danh muc thanh cong: '{TenDanhMucMoi}' -> '{TenDanhMucSua}'");
+            Pause();
+            Console.WriteLine($"[PASS] Sửa danh mục thành công: '{TenDanhMucMoi}' -> '{TenDanhMucSua}'");
         }
 
-        // ==================== TEST 6: S?A DANH M?C B? TR?NG T�N ====================
+        // ==================== TEST 6: SỬA DANH MỤC BỎ TRỐNG TÊN ====================
 
         [Test]
         [Order(6)]
@@ -338,33 +365,35 @@ namespace SeleniumTests
             NavigateToDanhMuc();
 
             Assert.That(_driver.FindElements(By.CssSelector("table tbody tr")).Count,
-                Is.GreaterThan(0), "Phai co danh muc de test sua voi ten rong.");
+                Is.GreaterThan(0), "Phải có danh mục để test sửa với tên rỗng.");
 
             var suaBtn = _wait.Until(ExpectedConditions.ElementToBeClickable(
                 By.CssSelector("a.btn-primary.btn-sm")));
             suaBtn.Click();
             _wait.Until(ExpectedConditions.UrlContains("/DanhMuc/Edit/"));
+            Pause();
 
             var tenInput = _wait.Until(ExpectedConditions.ElementIsVisible(
                 By.CssSelector("input[name='TenDanhMuc']")));
             tenInput.Clear();
 
             _driver.FindElement(By.CssSelector("button[type='submit'].btn-success")).Click();
-            System.Threading.Thread.Sleep(1000);
+            Pause();
+
+            Assert.That(_driver.Url, Does.Contain("/Edit/"),
+                "Khi bỏ trống tên khi sửa phải ở lại trang Edit.");
 
             var isInvalid = (bool)((IJavaScriptExecutor)_driver)
                 .ExecuteScript("return !arguments[0].validity.valid;",
                     _driver.FindElement(By.CssSelector("input[name='TenDanhMuc']")));
             Assert.That(isInvalid, Is.True,
-                "Input TenDanhMuc phai bi HTML5 validation khi bo trong khi sua.");
+                "Input TenDanhMuc phải bị HTML5 validation khi bỏ trống khi sửa.");
 
-            Assert.That(_driver.Url, Does.Contain("/Edit/"),
-                "Khi bo trong ten khi sua phai o lai trang Edit.");
-
-            Console.WriteLine("[PASS] Sua danh muc voi ten rong: Bi chan boi HTML5 required.");
+            Pause();
+            Console.WriteLine("[PASS] Sửa danh mục với tên rỗng: Bị chặn bởi HTML5 required.");
         }
 
-        // ==================== TEST 7: N�T H?Y TR�N TRANG T?O ====================
+        // ==================== TEST 7: NÚT HỦY TRÊN TRANG TẠO ====================
 
         [Test]
         [Order(7)]
@@ -375,26 +404,31 @@ namespace SeleniumTests
             _wait.Until(ExpectedConditions.ElementToBeClickable(
                 By.CssSelector("a[href='/DanhMuc/Create']"))).Click();
             _wait.Until(ExpectedConditions.UrlContains("/DanhMuc/Create"));
+            Pause();
 
-            _driver.FindElement(By.CssSelector("input[name='TenDanhMuc']")).SendKeys("Ten se bi huy");
+            _driver.FindElement(By.CssSelector("input[name='TenDanhMuc']")).SendKeys("Tên sẽ bị hủy");
+            Pause();
 
             var huyBtn = _wait.Until(ExpectedConditions.ElementToBeClickable(
                 By.CssSelector("a.btn-light[href='/DanhMuc']")));
             huyBtn.Click();
 
             _wait.Until(d => !d.Url.Contains("/Create"));
+            Pause();
+
             Assert.That(_driver.Url, Does.Contain("/DanhMuc"),
-                "Sau khi click Huy phai ve trang danh sach danh muc.");
+                "Sau khi click Hủy phải về trang danh sách danh mục.");
             Assert.That(_driver.Url, Does.Not.Contain("/Create"),
-                "Khong duoc o lai trang Create sau khi click Huy.");
+                "Không được ở lại trang Create sau khi click Hủy.");
 
-            Assert.That(TimDongTheoTen("Ten se bi huy"), Is.Null,
-                "Danh muc khong duoc luu khi bam Huy.");
+            Assert.That(TimDongTheoTen("Tên sẽ bị hủy"), Is.Null,
+                "Danh mục không được lưu khi bấm Hủy.");
 
-            Console.WriteLine($"[PASS] Nut Huy trang Tao: Ve lai danh sach. URL: {_driver.Url}");
+            Pause();
+            Console.WriteLine($"[PASS] Nút Hủy trang Tạo: Về lại danh sách. URL: {_driver.Url}");
         }
 
-        // ==================== TEST 8: N�T H?Y TR�N TRANG S?A ====================
+        // ==================== TEST 8: NÚT HỦY TRÊN TRANG SỬA ====================
 
         [Test]
         [Order(8)]
@@ -403,37 +437,42 @@ namespace SeleniumTests
             NavigateToDanhMuc();
 
             Assert.That(_driver.FindElements(By.CssSelector("table tbody tr")).Count,
-                Is.GreaterThan(0), "Phai co danh muc de test nut Huy trang Sua.");
+                Is.GreaterThan(0), "Phải có danh mục để test nút Hủy trang Sửa.");
 
             var firstRow = _driver.FindElement(By.CssSelector("table tbody tr"));
             string tenGoc = firstRow.FindElements(By.TagName("td"))[0].Text.Trim();
 
             firstRow.FindElement(By.CssSelector("a.btn-primary")).Click();
             _wait.Until(ExpectedConditions.UrlContains("/DanhMuc/Edit/"));
+            Pause();
 
             var tenInput = _wait.Until(ExpectedConditions.ElementIsVisible(
                 By.CssSelector("input[name='TenDanhMuc']")));
             tenInput.Clear();
-            tenInput.SendKeys("Ten tam thoi khong luu");
+            tenInput.SendKeys("Tên tạm thời không lưu");
+            Pause();
 
             var huyBtn = _wait.Until(ExpectedConditions.ElementToBeClickable(
                 By.CssSelector("a.btn-light[href='/DanhMuc']")));
             huyBtn.Click();
 
             _wait.Until(d => !d.Url.Contains("/Edit/"));
+            Pause();
+
             Assert.That(_driver.Url, Does.Contain("/DanhMuc"),
-                "Sau khi click Huy phai ve trang danh sach.");
+                "Sau khi click Hủy phải về trang danh sách.");
             Assert.That(_driver.Url, Does.Not.Contain("/Edit/"),
-                "Khong duoc o lai trang Edit sau khi click Huy.");
+                "Không được ở lại trang Edit sau khi click Hủy.");
 
             var dongGoc = TimDongTheoTen(tenGoc);
             Assert.That(dongGoc, Is.Not.Null,
-                $"Ten goc '{tenGoc}' phai van con sau khi click Huy.");
+                $"Tên gốc '{tenGoc}' phải vẫn còn sau khi click Hủy.");
 
-            Console.WriteLine($"[PASS] Nut Huy trang Sua: Ten goc '{tenGoc}' van duoc giu nguyen.");
+            Pause();
+            Console.WriteLine($"[PASS] Nút Hủy trang Sửa: Tên gốc '{tenGoc}' vẫn được giữ nguyên.");
         }
 
-        // ==================== TEST 9: X�A DANH M?C TH�NH C�NG ====================
+        // ==================== TEST 9: XÓA DANH MỤC THÀNH CÔNG ====================
 
         [Test]
         [Order(9)]
@@ -444,7 +483,8 @@ namespace SeleniumTests
 
             var dongCanXoa = TimDongTheoTen(TenDanhMucMoi);
             Assert.That(dongCanXoa, Is.Not.Null,
-                $"Danh muc '{TenDanhMucMoi}' phai ton tai truoc khi xoa.");
+                $"Danh mục '{TenDanhMucMoi}' phải tồn tại trước khi xóa.");
+            Pause();
 
             int soDongTruoc = _driver.FindElements(By.CssSelector("table tbody tr")).Count;
 
@@ -454,19 +494,21 @@ namespace SeleniumTests
             xoaBtn.Click();
 
             _wait.Until(d => !d.Url.Contains("/Delete/"));
+            Pause();
             NavigateToDanhMuc();
 
             Assert.That(TimDongTheoTen(TenDanhMucMoi), Is.Null,
-                $"Danh muc '{TenDanhMucMoi}' phai bi xoa khoi bang.");
+                $"Danh mục '{TenDanhMucMoi}' phải bị xóa khỏi bảng.");
 
             int soDongSau = _driver.FindElements(By.CssSelector("table tbody tr")).Count;
             Assert.That(soDongSau, Is.EqualTo(soDongTruoc - 1),
-                "So luong danh muc phai giam 1 sau khi xoa.");
+                "Số lượng danh mục phải giảm 1 sau khi xóa.");
 
-            Console.WriteLine($"[PASS] Xoa danh muc thanh cong: '{TenDanhMucMoi}'. So dong: {soDongTruoc} -> {soDongSau}");
+            Pause();
+            Console.WriteLine($"[PASS] Xóa danh mục thành công: '{TenDanhMucMoi}'. Số dòng: {soDongTruoc} -> {soDongSau}");
         }
 
-        // ==================== TEST 10: X�C NH?N DIALOG KHI X�A ====================
+        // ==================== TEST 10: XÁC NHẬN DIALOG KHI XÓA ====================
 
         [Test]
         [Order(10)]
@@ -477,7 +519,8 @@ namespace SeleniumTests
 
             var dongCanXoa = TimDongTheoTen(TenDanhMucMoi);
             Assert.That(dongCanXoa, Is.Not.Null,
-                $"Danh muc '{TenDanhMucMoi}' phai ton tai de test confirm dialog.");
+                $"Danh mục '{TenDanhMucMoi}' phải tồn tại để test confirm dialog.");
+            Pause();
 
             var xoaBtn = dongCanXoa!.FindElement(By.CssSelector("a.btn-danger"));
             ((IJavaScriptExecutor)_driver)
@@ -485,33 +528,36 @@ namespace SeleniumTests
             xoaBtn.Click();
 
             _wait.Until(d => !d.Url.Contains("/Delete/"));
+            Pause();
             NavigateToDanhMuc();
 
             Assert.That(TimDongTheoTen(TenDanhMucMoi), Is.Null,
-                "Khi xac nhan 'OK' trong dialog, danh muc phai bi xoa.");
+                "Khi xác nhận 'OK' trong dialog, danh mục phải bị xóa.");
 
-            Console.WriteLine("[PASS] Xac nhan dialog xoa: Danh muc da bi xoa sau khi bam OK.");
+            Pause();
+            Console.WriteLine("[PASS] Xác nhận dialog xóa: Danh mục đã bị xóa sau khi bấm OK.");
         }
 
-        // ==================== TEST 11: D?N D?P - X�A D? LI?U TEST ====================
+        // ==================== TEST 11: DỌN DẸP - XÓA DỮ LIỆU TEST ====================
 
         [Test]
         [Order(11)]
         public void Test11_DonDep_XoaDuLieuTest()
         {
-            // X�a t?t c? d? li?u test c�n s�t l?i
+            // Xóa tất cả dữ liệu test còn sót lại
             XoaNeuTonTai(TenDanhMucMoi);
             XoaNeuTonTai(TenDanhMucSua);
 
             NavigateToDanhMuc();
 
-            // Assert - Kh�ng c�n danh m?c test n�o
+            // Assert - Không còn danh mục test nào
             Assert.That(TimDongTheoTen(TenDanhMucMoi), Is.Null,
-                $"'{TenDanhMucMoi}' phai duoc don dep.");
+                $"'{TenDanhMucMoi}' phải được dọn dẹp.");
             Assert.That(TimDongTheoTen(TenDanhMucSua), Is.Null,
-                $"'{TenDanhMucSua}' phai duoc don dep.");
+                $"'{TenDanhMucSua}' phải được dọn dẹp.");
 
-            Console.WriteLine("[PASS] Don dep du lieu test thanh cong.");
+            Pause();
+            Console.WriteLine("[PASS] Dọn dẹp dữ liệu test thành công.");
         }
     }
 }

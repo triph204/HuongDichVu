@@ -1,4 +1,4 @@
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
@@ -20,13 +20,14 @@ namespace SeleniumTests
         private const string AdminUsername = "admin";
         private const string AdminPassword = "admin123";
 
-        // Du lieu test (dung ASCII tranh loi encoding)
+        // Dữ liệu test
         private const string TenMonMoi  = "TEST_MON_Selenium";
         private const string TenMonSua  = "TEST_MON_Selenium_EDITED";
-        private const string MoTaMoi    = "Mo ta mon an tu dong tao boi Selenium";
-        private const string MoTaSua    = "Mo ta mon an da duoc chinh sua boi Selenium";
+        private const string MoTaMoi    = "Mô tả món ăn tự động tạo bởi Selenium";
+        private const string MoTaSua    = "Mô tả món ăn đã được chỉnh sửa bởi Selenium";
         private const long   GiaMoi     = 99000;
         private const long   GiaSua     = 149000;
+        private const int Delay = 1000;
 
         // ==================== SETUP / TEARDOWN ====================
 
@@ -52,23 +53,30 @@ namespace SeleniumTests
 
         // ==================== HELPER METHODS ====================
 
+        private void Pause() => System.Threading.Thread.Sleep(Delay);
+
         private void DangNhap()
         {
             _driver.Navigate().GoToUrl(LoginUrl);
             _wait.Until(ExpectedConditions.ElementIsVisible(By.Name("username")));
+            Pause();
             _driver.FindElement(By.Name("username")).SendKeys(AdminUsername);
+            Pause();
             _driver.FindElement(By.Name("password")).SendKeys(AdminPassword);
+            Pause();
             _driver.FindElement(By.CssSelector("button[type='submit'].btn-primary")).Click();
             _wait.Until(ExpectedConditions.UrlContains("/DonHang"));
+            Pause();
         }
 
         private void NavigateToMonAn()
         {
             _driver.Navigate().GoToUrl(MonAnUrl);
             _wait.Until(ExpectedConditions.ElementIsVisible(By.CssSelector(".card")));
+            Pause();
         }
 
-        // Tim dong trong bang theo ten mon
+        // Tìm dòng trong bảng theo tên món
         private IWebElement? TimDongTheoTen(string tenMon)
         {
             var rows = _driver.FindElements(By.CssSelector("table tbody tr"));
@@ -77,11 +85,11 @@ namespace SeleniumTests
                 r.FindElements(By.TagName("td"))[0].Text.Trim() == tenMon);
         }
 
-        // Xoa mon an theo ten neu ton tai
+        // Xóa món ăn theo tên nếu tồn tại
         private void XoaNeuTonTai(string tenMon)
         {
             NavigateToMonAn();
-            // Tim tren tat ca cac trang (toi da 10 trang)
+            // Tìm trên tất cả các trang (tối đa 10 trang)
             for (int attempt = 0; attempt < 10; attempt++)
             {
                 var row = TimDongTheoTen(tenMon);
@@ -93,11 +101,11 @@ namespace SeleniumTests
                     xoaBtn.Click();
                     _wait.Until(d => !d.Url.Contains("/Delete/"));
                     _wait.Until(ExpectedConditions.ElementIsVisible(By.CssSelector(".card")));
-                    System.Threading.Thread.Sleep(300);
+                    Pause();
                     return;
                 }
 
-                // Sang trang tiep theo neu co
+                // Sang trang tiếp theo nếu có
                 var nextBtn = _driver.FindElements(By.CssSelector(".pagination .page-link"))
                     .FirstOrDefault(e => e.Text.Contains("Sau"));
                 if (nextBtn == null || !nextBtn.Displayed) break;
@@ -106,7 +114,7 @@ namespace SeleniumTests
             }
         }
 
-        // Lay danh muc dau tien trong select trang Create/Edit
+        // Lấy danh mục đầu tiên trong select trang Create/Edit
         private string LayDanhMucDauTien()
         {
             var options = _driver.FindElements(By.CssSelector("select[name='DanhMucId'] option"))
@@ -117,36 +125,42 @@ namespace SeleniumTests
             return options.Count > 0 ? (options[0].GetDomProperty("value") ?? "") : "";
         }
 
-        // Helper tao mon an moi va cho redirect
+        // Helper tạo món ăn mới và chờ redirect
         private void TaoMonAn(string ten, long gia, string moTa)
         {
             _driver.Navigate().GoToUrl(MonAnUrl + "/Create");
             _wait.Until(ExpectedConditions.ElementIsVisible(
                 By.CssSelector("input[name='TenMon']")));
+            Pause();
 
             _driver.FindElement(By.CssSelector("input[name='TenMon']")).Clear();
             _driver.FindElement(By.CssSelector("input[name='TenMon']")).SendKeys(ten);
+            Pause();
 
-            // Chon danh muc dau tien hop le
+            // Chọn danh mục đầu tiên hợp lệ
             string dmId = LayDanhMucDauTien();
             if (!string.IsNullOrEmpty(dmId))
             {
                 new SelectElement(_driver.FindElement(
                     By.CssSelector("select[name='DanhMucId']"))).SelectByValue(dmId);
             }
+            Pause();
 
             _driver.FindElement(By.CssSelector("input[name='Gia']")).Clear();
             _driver.FindElement(By.CssSelector("input[name='Gia']")).SendKeys(gia.ToString());
+            Pause();
 
             _driver.FindElement(By.CssSelector("textarea[name='MoTa']")).Clear();
             _driver.FindElement(By.CssSelector("textarea[name='MoTa']")).SendKeys(moTa);
+            Pause();
 
             _driver.FindElement(By.CssSelector("button[type='submit'].btn-success")).Click();
             _wait.Until(d => !d.Url.Contains("/Create"));
+            Pause();
             NavigateToMonAn();
         }
 
-        // Tim mon an tren tat ca cac trang
+        // Tìm món ăn trên tất cả các trang
         private IWebElement? TimMonAnTrenTatCaTrang(string tenMon)
         {
             NavigateToMonAn();
@@ -164,7 +178,7 @@ namespace SeleniumTests
             return null;
         }
 
-        // ==================== TEST 1: XEM DANH SACH MON AN ====================
+        // ==================== TEST 1: XEM DANH SÁCH MÓN ĂN ====================
 
         [Test]
         [Order(1)]
@@ -172,36 +186,31 @@ namespace SeleniumTests
         {
             NavigateToMonAn();
 
-            // Assert - URL dung
             Assert.That(_driver.Url, Does.Contain("/MonAn"),
-                "Phai dieu huong den trang /MonAn.");
+                "Phải điều hướng đến trang /MonAn.");
 
-            // Assert - Co nut Them Mon
             var themBtn = _driver.FindElement(By.CssSelector("a[href='/MonAn/Create']"));
-            Assert.That(themBtn.Displayed, Is.True, "Phai co nut 'Them Mon'.");
+            Assert.That(themBtn.Displayed, Is.True, "Phải có nút 'Thêm Món'.");
 
-            // Assert - Co filter danh muc
             var filterSelect = _driver.FindElement(By.CssSelector("select#categoryFilter"));
-            Assert.That(filterSelect.Displayed, Is.True, "Phai co dropdown loc theo danh muc.");
+            Assert.That(filterSelect.Displayed, Is.True, "Phải có dropdown lọc theo danh mục.");
 
-            // Assert - Co bang hoac thong bao rong
             bool coNoiDung =
                 _driver.FindElements(By.CssSelector("table tbody tr")).Count > 0 ||
                 _driver.FindElements(By.CssSelector(".no-data")).Count > 0;
-            Assert.That(coNoiDung, Is.True, "Trang phai hien thi bang mon an hoac thong bao rong.");
+            Assert.That(coNoiDung, Is.True, "Trang phải hiển thị bảng món ăn hoặc thông báo rỗng.");
 
-            // Assert - Bang co 5 cot: Ten Mon, Danh Muc, Gia, Co San, Hanh Dong
             var headers = _driver.FindElements(By.CssSelector("table thead tr th"));
-            Assert.That(headers.Count, Is.EqualTo(5), "Bang mon an phai co 5 cot.");
+            Assert.That(headers.Count, Is.EqualTo(5), "Bảng món ăn phải có 5 cột.");
 
-            // Assert - Hien thi thong tin tong so mon
             var infoText = _driver.FindElement(By.CssSelector(".card-body"));
-            Assert.That(infoText.Text.Length, Is.GreaterThan(0), "Phai hien thi thong tin tong so mon an.");
+            Assert.That(infoText.Text.Length, Is.GreaterThan(0), "Phải hiển thị thông tin tổng số món ăn.");
 
-            Console.WriteLine($"[PASS] Xem danh sach mon an thanh cong. URL: {_driver.Url}");
+            Pause();
+            Console.WriteLine($"[PASS] Xem danh sách món ăn thành công. URL: {_driver.Url}");
         }
 
-        // ==================== TEST 2: LOC THEO DANH MUC ====================
+        // ==================== TEST 2: LỌC THEO DANH MỤC ====================
 
         [Test]
         [Order(2)]
@@ -209,7 +218,7 @@ namespace SeleniumTests
         {
             NavigateToMonAn();
 
-            // Lay danh sach option trong filter (bo qua "Tat ca")
+            // Lấy danh sách option trong filter (bỏ qua "Tất cả")
             var options = _driver.FindElements(By.CssSelector("select#categoryFilter option"))
                 .Where(o =>
                 {
@@ -219,30 +228,27 @@ namespace SeleniumTests
 
             if (options.Count == 0)
             {
-                Assert.Pass("Khong co danh muc nao de test loc.");
+                Assert.Pass("Không có danh mục nào để test lọc.");
                 return;
             }
 
-            // Chon danh muc dau tien
+            // Chọn danh mục đầu tiên
             string dmId    = options[0].GetDomProperty("value") ?? "";
             string dmLabel = options[0].Text.Trim();
 
             new SelectElement(_driver.FindElement(
                 By.CssSelector("select#categoryFilter"))).SelectByValue(dmId);
+            Pause();
 
-            // Cho trang reload (onchange tu dong submit form)
             _wait.Until(d => d.Url.Contains($"categoryId={dmId}"));
 
-            // Assert - URL chua categoryId
             Assert.That(_driver.Url, Does.Contain($"categoryId={dmId}"),
-                "URL phai chua categoryId sau khi loc.");
+                "URL phải chứa categoryId sau khi lọc.");
 
-            // Assert - Thong tin hien thi co ten danh muc
             var infoSection = _driver.FindElement(By.CssSelector(".card-body"));
             Assert.That(infoSection.Text, Does.Contain(dmLabel),
-                "Trang phai hien thi ten danh muc dang loc.");
+                "Trang phải hiển thị tên danh mục đang lọc.");
 
-            // Assert - Neu co mon an, tat ca phai thuoc danh muc da chon
             var rows = _driver.FindElements(By.CssSelector("table tbody tr"));
             if (rows.Count > 0)
             {
@@ -252,13 +258,14 @@ namespace SeleniumTests
                     return cells.Count > 1 && cells[1].Text.Trim() == dmLabel;
                 });
                 Assert.That(tatCaDungDanhMuc, Is.True,
-                    "Tat ca mon an hien thi phai thuoc danh muc da chon.");
+                    "Tất cả món ăn hiển thị phải thuộc danh mục đã chọn.");
             }
 
-            Console.WriteLine($"[PASS] Loc theo danh muc '{dmLabel}' (ID={dmId}). URL: {_driver.Url}");
+            Pause();
+            Console.WriteLine($"[PASS] Lọc theo danh mục '{dmLabel}' (ID={dmId}). URL: {_driver.Url}");
         }
 
-        // ==================== TEST 3: XOA LOC DANH MUC ====================
+        // ==================== TEST 3: XÓA LỌC DANH MỤC ====================
 
         [Test]
         [Order(3)]
@@ -266,7 +273,7 @@ namespace SeleniumTests
         {
             NavigateToMonAn();
 
-            // Chon danh muc bat ky de loc
+            // Chọn danh mục bất kỳ để lọc
             var options = _driver.FindElements(By.CssSelector("select#categoryFilter option"))
                 .Where(o =>
                 {
@@ -276,7 +283,7 @@ namespace SeleniumTests
 
             if (options.Count == 0)
             {
-                Assert.Pass("Khong co danh muc de test xoa loc.");
+                Assert.Pass("Không có danh mục để test xóa lọc.");
                 return;
             }
 
@@ -285,28 +292,27 @@ namespace SeleniumTests
                 By.CssSelector("select#categoryFilter"))).SelectByValue(dmId);
             _wait.Until(d => d.Url.Contains($"categoryId={dmId}"));
 
-            // Assert - Co nut "Xoa loc"
             var xoaLocBtn = _wait.Until(ExpectedConditions.ElementToBeClickable(
                 By.CssSelector("a.btn-light.btn-sm[href='/MonAn']")));
-            Assert.That(xoaLocBtn.Displayed, Is.True, "Phai co nut 'Xoa loc' khi dang loc.");
+            Assert.That(xoaLocBtn.Displayed, Is.True, "Phải có nút 'Xóa lọc' khi đang lọc.");
 
-            // Act - Click Xoa loc
             xoaLocBtn.Click();
             _wait.Until(d => !d.Url.Contains("categoryId=") || d.Url.Contains("categoryId=0"));
+            Pause();
 
-            // Assert - Ve tat ca mon an
             Assert.That(_driver.Url, Does.Not.Contain($"categoryId={dmId}"),
-                "Sau khi xoa loc, URL khong con categoryId cu.");
+                "Sau khi xóa lọc, URL không còn categoryId cũ.");
 
             var filterSelect = new SelectElement(
                 _driver.FindElement(By.CssSelector("select#categoryFilter")));
             string selectedVal = filterSelect.SelectedOption.GetDomProperty("value") ?? "";
-            Assert.That(selectedVal, Is.EqualTo("0"), "Dropdown filter phai tro ve 'Tat ca danh muc'.");
+            Assert.That(selectedVal, Is.EqualTo("0"), "Dropdown filter phải trở về 'Tất cả danh mục'.");
 
-            Console.WriteLine($"[PASS] Xoa loc danh muc thanh cong. URL: {_driver.Url}");
+            Pause();
+            Console.WriteLine($"[PASS] Xóa lọc danh mục thành công. URL: {_driver.Url}");
         }
 
-        // ==================== TEST 4: PHAN TRANG ====================
+        // ==================== TEST 4: PHÂN TRANG ====================
 
         [Test]
         [Order(4)]
@@ -319,18 +325,16 @@ namespace SeleniumTests
 
             if (paginationItems.Count == 0)
             {
-                Console.WriteLine("[SKIP] Khong du mon an de phan trang (< 12). Test bo qua.");
-                Assert.Pass("Khong du du lieu de test phan trang.");
+                Console.WriteLine("[SKIP] Không đủ món ăn để phân trang (< 12). Test bỏ qua.");
+                Assert.Pass("Không đủ dữ liệu để test phân trang.");
                 return;
             }
 
-            // Assert - Trang 1 dang active
             var activePage = _driver.FindElement(
                 By.CssSelector(".pagination .page-item.active .page-link, .pagination li.active a"));
             Assert.That(activePage.Text.Trim(), Is.EqualTo("1"),
-                "Trang dau tien phai dang active la trang 1.");
+                "Trang đầu tiên phải đang active là trang 1.");
 
-            // Act - Click nut Sau
             var nextBtn = _driver.FindElements(By.CssSelector(".pagination .page-link"))
                 .FirstOrDefault(e => e.Text.Contains("Sau"));
 
@@ -338,24 +342,25 @@ namespace SeleniumTests
             {
                 nextBtn.Click();
                 _wait.Until(d => d.Url.Contains("page=2"));
+                Pause();
 
                 Assert.That(_driver.Url, Does.Contain("page=2"),
-                    "Sau khi click 'Sau', URL phai chua page=2.");
+                    "Sau khi click 'Sau', URL phải chứa page=2.");
 
                 var activePage2 = _driver.FindElement(
                     By.CssSelector(".pagination .page-item.active .page-link, .pagination li.active a"));
                 Assert.That(activePage2.Text.Trim(), Is.EqualTo("2"),
-                    "Trang 2 phai dang active.");
+                    "Trang 2 phải đang active.");
 
-                Console.WriteLine($"[PASS] Phan trang: Da chuyen sang trang 2. URL: {_driver.Url}");
+                Console.WriteLine($"[PASS] Phân trang: Đã chuyển sang trang 2. URL: {_driver.Url}");
 
-                // Act - Click nut Truoc de quay lai trang 1
+                // Tìm nút Trước để quay lại trang 1
                 var prevBtn = _driver.FindElements(By.CssSelector(".pagination .page-link"))
                     .FirstOrDefault(e => e.Text.Contains("Sau") == false && e.Text.Contains("1") == false &&
                                         (e.Text.Contains("Tr") || e.Text.Contains("chevron-left") ||
                                          e.FindElements(By.CssSelector(".fa-chevron-left")).Count > 0));
 
-                // Tim lai nut Truoc don gian hon
+                // Tìm lại nút Trước đơn giản hơn
                 var allPageLinks = _driver.FindElements(By.CssSelector(".pagination .page-link"));
                 var prevLink = allPageLinks.FirstOrDefault(e =>
                 {
@@ -368,16 +373,17 @@ namespace SeleniumTests
                 {
                     prevLink.Click();
                     _wait.Until(d => !d.Url.Contains("page=2") || d.Url.Contains("page=1"));
-                    Console.WriteLine($"[PASS] Phan trang: Da quay ve trang 1. URL: {_driver.Url}");
+                    Pause();
+                    Console.WriteLine($"[PASS] Phân trang: Đã quay về trang 1. URL: {_driver.Url}");
                 }
             }
             else
             {
-                Console.WriteLine("[PASS] Chi co 1 trang mon an, khong co nut Sau.");
+                Console.WriteLine("[PASS] Chỉ có 1 trang món ăn, không có nút Sau.");
             }
         }
 
-        // ==================== TEST 5: THEM MON AN THANH CONG ====================
+        // ==================== TEST 5: THÊM MÓN ĂN THÀNH CÔNG ====================
 
         [Test]
         [Order(5)]
@@ -388,60 +394,60 @@ namespace SeleniumTests
 
             NavigateToMonAn();
 
-            // Act - Click nut Them Mon
             var themBtn = _wait.Until(ExpectedConditions.ElementToBeClickable(
                 By.CssSelector("a[href='/MonAn/Create']")));
             themBtn.Click();
 
             _wait.Until(ExpectedConditions.UrlContains("/MonAn/Create"));
+            Pause();
             Assert.That(_driver.Url, Does.Contain("/MonAn/Create"),
-                "Phai chuyen sang trang tao mon an.");
+                "Phải chuyển sang trang tạo món ăn.");
 
-            // Dien form
             var tenInput = _wait.Until(ExpectedConditions.ElementIsVisible(
                 By.CssSelector("input[name='TenMon']")));
             tenInput.Clear();
             tenInput.SendKeys(TenMonMoi);
+            Pause();
 
             string dmId = LayDanhMucDauTien();
-            Assert.That(dmId, Is.Not.Empty, "Phai co danh muc de chon khi tao mon an.");
+            Assert.That(dmId, Is.Not.Empty, "Phải có danh mục để chọn khi tạo món ăn.");
             new SelectElement(_driver.FindElement(
                 By.CssSelector("select[name='DanhMucId']"))).SelectByValue(dmId);
+            Pause();
 
             var giaInput = _driver.FindElement(By.CssSelector("input[name='Gia']"));
             giaInput.Clear();
             giaInput.SendKeys(GiaMoi.ToString());
+            Pause();
 
             var moTaInput = _driver.FindElement(By.CssSelector("textarea[name='MoTa']"));
             moTaInput.Clear();
             moTaInput.SendKeys(MoTaMoi);
+            Pause();
 
-            // Click Luu
             _driver.FindElement(By.CssSelector("button[type='submit'].btn-success")).Click();
             _wait.Until(d => !d.Url.Contains("/Create"));
+            Pause();
 
-            // Reload ve danh sach
             NavigateToMonAn();
 
-            // Assert - Mon an moi xuat hien
             var dongMoi = TimMonAnTrenTatCaTrang(TenMonMoi);
             Assert.That(dongMoi, Is.Not.Null,
-                $"Mon an '{TenMonMoi}' phai xuat hien trong bang sau khi them.");
+                $"Món ăn '{TenMonMoi}' phải xuất hiện trong bảng sau khi thêm.");
 
-            // Assert - Gia hien thi dung (chi kiem tra co hien thi gia, khong parse)
             var cells = dongMoi!.FindElements(By.TagName("td"));
             string giaCell = cells[2].Text.Trim();
             Assert.That(giaCell.Length, Is.GreaterThan(0),
-                "Cot Gia phai co gia tri hien thi.");
-            // Kiem tra so trong gia phai khop GiaMoi
+                "Cột Giá phải có giá trị hiển thị.");
             string giaDigits = new string(giaCell.Where(char.IsDigit).ToArray());
             Assert.That(giaDigits, Does.Contain(GiaMoi.ToString()),
-                $"Gia mon an phai chua '{GiaMoi}', hien thi: '{giaCell}'");
+                $"Giá món ăn phải chứa '{GiaMoi}', hiển thị: '{giaCell}'");
 
-            Console.WriteLine($"[PASS] Them mon an thanh cong: '{TenMonMoi}', gia: {giaCell}");
+            Pause();
+            Console.WriteLine($"[PASS] Thêm món ăn thành công: '{TenMonMoi}', giá: {giaCell}");
         }
 
-        // ==================== TEST 6: THEM MON AN BO TRONG TEN ====================
+        // ==================== TEST 6: THÊM MÓN ĂN BỎ TRỐNG TÊN ====================
 
         [Test]
         [Order(6)]
@@ -452,8 +458,9 @@ namespace SeleniumTests
             _wait.Until(ExpectedConditions.ElementToBeClickable(
                 By.CssSelector("a[href='/MonAn/Create']"))).Click();
             _wait.Until(ExpectedConditions.UrlContains("/MonAn/Create"));
+            Pause();
 
-            // Chi nhap gia, khong nhap ten
+            // Chỉ nhập giá, không nhập tên
             string dmId = LayDanhMucDauTien();
             if (!string.IsNullOrEmpty(dmId))
                 new SelectElement(_driver.FindElement(
@@ -464,22 +471,23 @@ namespace SeleniumTests
             giaInput.SendKeys("50000");
 
             _driver.FindElement(By.CssSelector("button[type='submit'].btn-success")).Click();
-            System.Threading.Thread.Sleep(1000);
+            Pause();
 
             // Assert - HTML5 required chan submit
             var tenInput = _driver.FindElement(By.CssSelector("input[name='TenMon']"));
             var isInvalid = (bool)((IJavaScriptExecutor)_driver)
                 .ExecuteScript("return !arguments[0].validity.valid;", tenInput);
             Assert.That(isInvalid, Is.True,
-                "Input TenMon phai bi HTML5 validation khi bo trong.");
+                "Input TenMon phải bị HTML5 validation khi bỏ trống.");
 
             Assert.That(_driver.Url, Does.Contain("/Create"),
-                "Khi bo trong ten phai o lai trang Create.");
+                "Khi bỏ trống tên phải ở lại trang Create.");
 
-            Console.WriteLine("[PASS] Bo trong ten mon an: Bi chan boi HTML5 required.");
+            Pause();
+            Console.WriteLine("[PASS] Bỏ trống tên món ăn: Bị chặn bởi HTML5 required.");
         }
 
-        // ==================== TEST 7: THEM MON AN BO TRONG DANH MUC ====================
+        // ==================== TEST 7: THÊM MÓN ĂN BỎ TRỐNG DANH MỤC ====================
 
         [Test]
         [Order(7)]
@@ -490,28 +498,31 @@ namespace SeleniumTests
             _wait.Until(ExpectedConditions.ElementToBeClickable(
                 By.CssSelector("a[href='/MonAn/Create']"))).Click();
             _wait.Until(ExpectedConditions.UrlContains("/MonAn/Create"));
+            Pause();
 
-            // Chi nhap ten va gia, khong chon danh muc
-            _driver.FindElement(By.CssSelector("input[name='TenMon']")).SendKeys("Mon khong co danh muc");
+            // Chỉ nhập tên và giá, không chọn danh mục
+            _driver.FindElement(By.CssSelector("input[name='TenMon']")).SendKeys("Món không có danh mục");
             _driver.FindElement(By.CssSelector("input[name='Gia']")).SendKeys("50000");
+            Pause();
 
             _driver.FindElement(By.CssSelector("button[type='submit'].btn-success")).Click();
-            System.Threading.Thread.Sleep(1000);
+            Pause();
 
             // Assert - HTML5 required chan submit
             var dmSelect = _driver.FindElement(By.CssSelector("select[name='DanhMucId']"));
             var isInvalid = (bool)((IJavaScriptExecutor)_driver)
                 .ExecuteScript("return !arguments[0].validity.valid;", dmSelect);
             Assert.That(isInvalid, Is.True,
-                "Select DanhMucId phai bi HTML5 validation khi chua chon.");
+                "Select DanhMucId phải bị HTML5 validation khi chưa chọn.");
 
             Assert.That(_driver.Url, Does.Contain("/Create"),
-                "Khi bo trong danh muc phai o lai trang Create.");
+                "Khi bỏ trống danh mục phải ở lại trang Create.");
 
-            Console.WriteLine("[PASS] Bo trong danh muc: Bi chan boi HTML5 required.");
+            Pause();
+            Console.WriteLine("[PASS] Bỏ trống danh mục: Bị chặn bởi HTML5 required.");
         }
 
-        // ==================== TEST 8: XEM TRANG SUA MON AN ====================
+        // ==================== TEST 8: XEM TRANG SỬA MÓN ĂN ====================
 
         [Test]
         [Order(8)]
@@ -520,52 +531,51 @@ namespace SeleniumTests
             NavigateToMonAn();
 
             Assert.That(_driver.FindElements(By.CssSelector("table tbody tr")).Count,
-                Is.GreaterThan(0), "Phai co mon an de test trang sua.");
+                Is.GreaterThan(0), "Phải có món ăn để test trang sửa.");
 
-            // Click nut Sua dau tien
+            // Click nút Sửa đầu tiên
             var suaBtn = _wait.Until(ExpectedConditions.ElementToBeClickable(
                 By.CssSelector("a.btn-primary.btn-sm")));
             suaBtn.Click();
 
             _wait.Until(ExpectedConditions.UrlContains("/MonAn/Edit/"));
-            Assert.That(_driver.Url, Does.Contain("/MonAn/Edit/"),
-                "Phai chuyen sang trang sua mon an.");
+            Pause();
 
-            // Assert - Form co cac truong can thiet
+            // Assert - Form có các trường cần thiết
             var tenInput = _wait.Until(ExpectedConditions.ElementIsVisible(
                 By.CssSelector("input[name='TenMon']")));
-            Assert.That(tenInput.Displayed, Is.True, "Phai co o nhap TenMon.");
+            Assert.That(tenInput.Displayed, Is.True, "Phải có ô nhập TenMon.");
 
             var dmSelect = _driver.FindElement(By.CssSelector("select[name='DanhMucId']"));
-            Assert.That(dmSelect.Displayed, Is.True, "Phai co select DanhMucId.");
+            Assert.That(dmSelect.Displayed, Is.True, "Phải có select DanhMucId.");
 
             var giaInput = _driver.FindElement(By.CssSelector("input[name='Gia']"));
-            Assert.That(giaInput.Displayed, Is.True, "Phai co o nhap Gia.");
+            Assert.That(giaInput.Displayed, Is.True, "Phải có ô nhập Giá.");
 
             var coSanCheck = _driver.FindElement(By.CssSelector("input[name='CoSan']"));
-            Assert.That(coSanCheck.Displayed, Is.True, "Phai co checkbox CoSan.");
+            Assert.That(coSanCheck.Displayed, Is.True, "Phải có checkbox CoSan.");
 
-            // Assert - Du lieu da duoc load san tu DB
+            // Assert - Dữ liệu đã được load sẵn từ DB
             string tenHienTai = tenInput.GetDomProperty("value") ?? "";
             Assert.That(tenHienTai.Length, Is.GreaterThan(0),
-                "TenMon phai co gia tri san tu DB.");
+                "TenMon phải có giá trị sẵn từ DB.");
 
             string giaHienTai = giaInput.GetDomProperty("value") ?? "";
             Assert.That(giaHienTai.Length, Is.GreaterThan(0),
-                "Gia phai co gia tri san tu DB.");
+                "Giá phải có giá trị sẵn từ DB.");
 
-            // Assert - Co nut Cap Nhat va Huy
+            // Assert - Có nút Cập Nhật và Hủy
             Assert.That(_driver.FindElement(
                 By.CssSelector("button[type='submit'].btn-success")).Displayed, Is.True,
-                "Phai co nut 'Cap Nhat'.");
+                "Phải có nút 'Cập Nhật'.");
             Assert.That(_driver.FindElement(
                 By.CssSelector("a.btn-light[href='/MonAn']")).Displayed, Is.True,
-                "Phai co nut 'Huy'.");
+                "Phải có nút 'Hủy'.");
 
-            Console.WriteLine($"[PASS] Xem trang sua mon an. URL: {_driver.Url}, Ten: '{tenHienTai}'");
+            Console.WriteLine($"[PASS] Xem trang sửa món ăn. URL: {_driver.Url}, Tên: '{tenHienTai}'");
         }
 
-        // ==================== TEST 9: SUA MON AN THANH CONG ====================
+        // ==================== TEST 9: SỬA MÓN ĂN THÀNH CÔNG ====================
 
         [Test]
         [Order(9)]
@@ -575,54 +585,60 @@ namespace SeleniumTests
             XoaNeuTonTai(TenMonSua);
             TaoMonAn(TenMonMoi, GiaMoi, MoTaMoi);
 
-            // Tim va click nut Sua cua mon test
+            // Tìm và click nút Sửa của món test
             var dongTest = TimMonAnTrenTatCaTrang(TenMonMoi);
-            Assert.That(dongTest, Is.Not.Null, $"Phai tim thay mon an '{TenMonMoi}' de sua.");
+            Assert.That(dongTest, Is.Not.Null, $"Phải tìm thấy món ăn '{TenMonMoi}' để sửa.");
 
             dongTest!.FindElement(By.CssSelector("a.btn-primary")).Click();
             _wait.Until(ExpectedConditions.UrlContains("/MonAn/Edit/"));
+            Pause();
 
-            // Act - Cap nhat ten va gia
+            // Act - Cập nhật tên và giá
             var tenInput = _wait.Until(ExpectedConditions.ElementIsVisible(
                 By.CssSelector("input[name='TenMon']")));
             tenInput.Clear();
             tenInput.SendKeys(TenMonSua);
+            Pause();
 
             var giaInput = _driver.FindElement(By.CssSelector("input[name='Gia']"));
             giaInput.Clear();
             giaInput.SendKeys(GiaSua.ToString());
+            Pause();
 
             var moTaInput = _driver.FindElement(By.CssSelector("textarea[name='MoTa']"));
             moTaInput.Clear();
             moTaInput.SendKeys(MoTaSua);
+            Pause();
 
             _driver.FindElement(By.CssSelector("button[type='submit'].btn-success")).Click();
             _wait.Until(d => !d.Url.Contains("/Edit/"));
+            Pause();
             NavigateToMonAn();
 
             Assert.That(_driver.Url, Does.Not.Contain("/Edit/"),
-                "Sau khi cap nhat phai redirect ve trang danh sach.");
+                "Sau khi cập nhật phải redirect về trang danh sách.");
 
-            // Assert - Mon an voi ten moi xuat hien
+            // Assert - Món ăn với tên mới xuất hiện
             var dongSua = TimMonAnTrenTatCaTrang(TenMonSua);
             Assert.That(dongSua, Is.Not.Null,
-                $"Mon an '{TenMonSua}' phai xuat hien sau khi sua.");
+                $"Món ăn '{TenMonSua}' phải xuất hiện sau khi sửa.");
 
-            // Assert - Gia moi dung
+            // Assert - Giá mới đúng
             var cells = dongSua!.FindElements(By.TagName("td"));
             string giaCell = cells[2].Text.Trim();
             string giaDigits = new string(giaCell.Where(char.IsDigit).ToArray());
             Assert.That(giaDigits, Does.Contain(GiaSua.ToString()),
-                $"Gia phai duoc cap nhat thanh {GiaSua}, hien thi: '{giaCell}'");
+                $"Giá phải được cập nhật thành {GiaSua}, hiển thị: '{giaCell}'");
 
-            // Assert - Ten cu khong con
+            // Assert - Tên cũ không còn
             Assert.That(TimMonAnTrenTatCaTrang(TenMonMoi), Is.Null,
-                $"Ten cu '{TenMonMoi}' khong duoc ton tai sau khi sua.");
+                $"Tên cũ '{TenMonMoi}' không được tồn tại sau khi sửa.");
 
-            Console.WriteLine($"[PASS] Sua mon an thanh cong: '{TenMonMoi}' -> '{TenMonSua}', gia: {GiaSua}");
+            Pause();
+            Console.WriteLine($"[PASS] Sửa món ăn thành công: '{TenMonMoi}' -> '{TenMonSua}', giá: {GiaSua}");
         }
 
-        // ==================== TEST 10: SUA MON AN BO TRONG TEN ====================
+        // ==================== TEST 10: SỬA MÓN ĂN BỎ TRỐNG TÊN ====================
 
         [Test]
         [Order(10)]
@@ -631,34 +647,37 @@ namespace SeleniumTests
             NavigateToMonAn();
 
             Assert.That(_driver.FindElements(By.CssSelector("table tbody tr")).Count,
-                Is.GreaterThan(0), "Phai co mon an de test sua voi ten rong.");
+                Is.GreaterThan(0), "Phải có món ăn để test sửa với tên rỗng.");
 
             var suaBtn = _wait.Until(ExpectedConditions.ElementToBeClickable(
                 By.CssSelector("a.btn-primary.btn-sm")));
             suaBtn.Click();
             _wait.Until(ExpectedConditions.UrlContains("/MonAn/Edit/"));
+            Pause();
 
-            // Xoa trang ten roi submit
+            // Xóa trắng tên rồi submit
             var tenInput = _wait.Until(ExpectedConditions.ElementIsVisible(
                 By.CssSelector("input[name='TenMon']")));
             tenInput.Clear();
 
             _driver.FindElement(By.CssSelector("button[type='submit'].btn-success")).Click();
-            System.Threading.Thread.Sleep(1000);
+            Pause();
 
+            // Assert - HTML5 required chan submit
             var isInvalid = (bool)((IJavaScriptExecutor)_driver)
                 .ExecuteScript("return !arguments[0].validity.valid;",
                     _driver.FindElement(By.CssSelector("input[name='TenMon']")));
             Assert.That(isInvalid, Is.True,
-                "TenMon phai bi HTML5 validation khi bo trong luc sua.");
+                "TenMon phải bị HTML5 validation khi bỏ trống lúc sửa.");
 
             Assert.That(_driver.Url, Does.Contain("/Edit/"),
-                "Khi bo trong ten luc sua phai o lai trang Edit.");
+                "Khi bỏ trống tên lúc sửa phải ở lại trang Edit.");
 
-            Console.WriteLine("[PASS] Sua mon an voi ten rong: Bi chan boi HTML5 required.");
+            Pause();
+            Console.WriteLine("[PASS] Sửa món ăn với tên rỗng: Bị chặn bởi HTML5 required.");
         }
 
-        // ==================== TEST 11: CAP NHAT CO SAN ====================
+        // ==================== TEST 11: CẬP NHẬT CÓ SẴN ====================
 
         [Test]
         [Order(11)]
@@ -668,29 +687,32 @@ namespace SeleniumTests
             TaoMonAn(TenMonMoi, GiaMoi, MoTaMoi);
 
             var dongTest = TimMonAnTrenTatCaTrang(TenMonMoi);
-            Assert.That(dongTest, Is.Not.Null, $"Phai tim thay mon an '{TenMonMoi}'.");
+            Assert.That(dongTest, Is.Not.Null, $"Phải tìm thấy món ăn '{TenMonMoi}'.");
 
             dongTest!.FindElement(By.CssSelector("a.btn-primary")).Click();
             _wait.Until(ExpectedConditions.UrlContains("/MonAn/Edit/"));
+            Pause();
 
-            // Kiem tra trang thai checkbox CoSan hien tai
+            // Kiểm tra trạng thái checkbox CoSan hiện tại
             var coSanCheck = _wait.Until(ExpectedConditions.ElementIsVisible(
                 By.CssSelector("input[name='CoSan']")));
             bool isCheckedBefore = coSanCheck.Selected;
 
-            // Toggle trang thai CoSan
+            // Toggle trạng thái CoSan
             coSanCheck.Click();
+            Pause();
             bool isCheckedAfter = coSanCheck.Selected;
             Assert.That(isCheckedAfter, Is.Not.EqualTo(isCheckedBefore),
-                "Trang thai CoSan phai thay doi sau khi click.");
+                "Trạng thái CoSan phải thay đổi sau khi click.");
 
             _driver.FindElement(By.CssSelector("button[type='submit'].btn-success")).Click();
             _wait.Until(d => !d.Url.Contains("/Edit/"));
+            Pause();
             NavigateToMonAn();
 
             // Assert - Badge CoSan thay doi tuong ung
             var dongSauSua = TimMonAnTrenTatCaTrang(TenMonMoi);
-            Assert.That(dongSauSua, Is.Not.Null, "Mon an phai con sau khi cap nhat CoSan.");
+            Assert.That(dongSauSua, Is.Not.Null, "Món ăn phải còn sau khi cập nhật CoSan.");
 
             var badgeCell = dongSauSua!.FindElements(By.TagName("td"))[3];
             string badgeClass = badgeCell.FindElement(By.CssSelector("span.badge")).GetDomProperty("className") ?? "";
@@ -707,10 +729,10 @@ namespace SeleniumTests
             }
 
             string badgeText = badgeCell.FindElement(By.CssSelector("span.badge")).Text;
-            Console.WriteLine($"[PASS] Cap nhat CoSan: {isCheckedBefore} -> {isCheckedAfter}, badge class: '{badgeClass}', text: '{badgeText}'");
+            Console.WriteLine($"[PASS] Cập nhật CoSan: {isCheckedBefore} -> {isCheckedAfter}, badge class: '{badgeClass}', text: '{badgeText}'");
         }
 
-        // ==================== TEST 12: NUT HUY TRANG TAO ====================
+        // ==================== TEST 12: NÚT HỦY TRANG TẠO ====================
 
         [Test]
         [Order(12)]
@@ -721,26 +743,30 @@ namespace SeleniumTests
             _wait.Until(ExpectedConditions.ElementToBeClickable(
                 By.CssSelector("a[href='/MonAn/Create']"))).Click();
             _wait.Until(ExpectedConditions.UrlContains("/MonAn/Create"));
+            Pause();
 
-            _driver.FindElement(By.CssSelector("input[name='TenMon']")).SendKeys("Ten se bi huy");
+            _driver.FindElement(By.CssSelector("input[name='TenMon']")).SendKeys("Tên sẽ bị hủy");
+            Pause();
 
             var huyBtn = _wait.Until(ExpectedConditions.ElementToBeClickable(
                 By.CssSelector("a.btn-light[href='/MonAn']")));
             huyBtn.Click();
 
             _wait.Until(d => !d.Url.Contains("/Create"));
+            Pause();
+
             Assert.That(_driver.Url, Does.Contain("/MonAn"),
-                "Sau khi click Huy phai ve trang danh sach mon an.");
+                "Sau khi click Hủy phải về trang danh sách món ăn.");
             Assert.That(_driver.Url, Does.Not.Contain("/Create"),
-                "Khong duoc o lai trang Create sau khi click Huy.");
+                "Không được ở lại trang Create sau khi click Hủy.");
 
-            Assert.That(TimDongTheoTen("Ten se bi huy"), Is.Null,
-                "Mon an khong duoc luu khi bam Huy.");
+            Assert.That(TimDongTheoTen("Tên sẽ bị hủy"), Is.Null,
+                "Món ăn không được lưu khi bấm Hủy.");
 
-            Console.WriteLine($"[PASS] Nut Huy trang Tao: Ve lai danh sach. URL: {_driver.Url}");
+            Console.WriteLine($"[PASS] Nút Hủy trang Tạo: Về lại danh sách. URL: {_driver.Url}");
         }
 
-        // ==================== TEST 13: NUT HUY TRANG SUA ====================
+        // ==================== TEST 13: NÚT HỦY TRANG SỬA ====================
 
         [Test]
         [Order(13)]
@@ -749,40 +775,43 @@ namespace SeleniumTests
             NavigateToMonAn();
 
             Assert.That(_driver.FindElements(By.CssSelector("table tbody tr")).Count,
-                Is.GreaterThan(0), "Phai co mon an de test nut Huy trang Sua.");
+                Is.GreaterThan(0), "Phải có món ăn để test nút Hủy trang Sửa.");
 
-            // Lay ten hien tai cua mon dau tien
+            // Lấy tên hiện tại của món đầu tiên
             var firstRow = _driver.FindElement(By.CssSelector("table tbody tr"));
             string tenGoc = firstRow.FindElements(By.TagName("td"))[0].Text.Trim();
 
             firstRow.FindElement(By.CssSelector("a.btn-primary")).Click();
             _wait.Until(ExpectedConditions.UrlContains("/MonAn/Edit/"));
+            Pause();
 
-            // Nhap ten moi nhung KHONG submit
+            // Nhập tên mới nhưng KHÔNG submit
             var tenInput = _wait.Until(ExpectedConditions.ElementIsVisible(
                 By.CssSelector("input[name='TenMon']")));
             tenInput.Clear();
-            tenInput.SendKeys("Ten tam thoi se khong luu");
+            tenInput.SendKeys("Tên tạm thời sẽ không lưu");
+            Pause();
 
             var huyBtn = _wait.Until(ExpectedConditions.ElementToBeClickable(
                 By.CssSelector("a.btn-light[href='/MonAn']")));
             huyBtn.Click();
 
             _wait.Until(d => !d.Url.Contains("/Edit/"));
-            Assert.That(_driver.Url, Does.Contain("/MonAn"),
-                "Sau khi click Huy phai ve trang danh sach.");
-            Assert.That(_driver.Url, Does.Not.Contain("/Edit/"),
-                "Khong duoc o lai trang Edit sau khi click Huy.");
+            Pause();
 
-            // Assert - Ten goc van con
+            Assert.That(_driver.Url, Does.Contain("/MonAn"),
+                "Sau khi click Hủy phải về trang danh sách.");
+            Assert.That(_driver.Url, Does.Not.Contain("/Edit/"),
+                "Không được ở lại trang Edit sau khi click Hủy.");
+
             var dongGoc = TimDongTheoTen(tenGoc);
             Assert.That(dongGoc, Is.Not.Null,
-                $"Ten goc '{tenGoc}' phai van con sau khi click Huy.");
+                $"Tên gốc '{tenGoc}' phải vẫn còn sau khi click Hủy.");
 
-            Console.WriteLine($"[PASS] Nut Huy trang Sua: Ten goc '{tenGoc}' van duoc giu nguyen.");
+            Console.WriteLine($"[PASS] Nút Hủy trang Sửa: Tên gốc '{tenGoc}' vẫn được giữ nguyên.");
         }
 
-        // ==================== TEST 14: XOA MON AN THANH CONG ====================
+        // ==================== TEST 14: XÓA MÓN ĂN THÀNH CÔNG ====================
 
         [Test]
         [Order(14)]
@@ -793,28 +822,34 @@ namespace SeleniumTests
 
             var dongCanXoa = TimMonAnTrenTatCaTrang(TenMonMoi);
             Assert.That(dongCanXoa, Is.Not.Null,
-                $"Mon an '{TenMonMoi}' phai ton tai truoc khi xoa.");
+                $"Món ăn '{TenMonMoi}' phải tồn tại trước khi xóa.");
 
-            // Dem so dong truoc khi xoa (tren trang hien tai)
+            // Đếm số dòng trước khi xóa (trên trang hiện tại)
             int soDongTruoc = _driver.FindElements(By.CssSelector("table tbody tr")).Count;
 
-            // Act - Click nut Xoa (bo qua confirm bang JS)
+            // Act - Click nút Xóa (bỏ qua confirm bang JS)
             var xoaBtn = dongCanXoa!.FindElement(By.CssSelector("a.btn-danger"));
             ((IJavaScriptExecutor)_driver).ExecuteScript(
                 "arguments[0].removeAttribute('onclick');", xoaBtn);
             xoaBtn.Click();
 
             _wait.Until(d => !d.Url.Contains("/Delete/"));
+            Pause();
             NavigateToMonAn();
 
-            // Assert - Mon an da bi xoa
+            // Assert - Món ăn da bi xoa
             Assert.That(TimMonAnTrenTatCaTrang(TenMonMoi), Is.Null,
-                $"Mon an '{TenMonMoi}' phai bi xoa khoi bang.");
+                $"Món ăn '{TenMonMoi}' phải bị xóa khỏi bảng.");
 
-            Console.WriteLine($"[PASS] Xoa mon an thanh cong: '{TenMonMoi}'");
+            // Assert - So dong sau khi xoa
+            int soDongSau = _driver.FindElements(By.CssSelector("table tbody tr")).Count;
+            Assert.That(soDongSau, Is.EqualTo(soDongTruoc - 1),
+                "So dong trong bang phai giam di 1 sau khi xoa mon an.");
+
+            Console.WriteLine($"[PASS] Xóa món ăn thành công: '{TenMonMoi}'");
         }
 
-        // ==================== TEST 15: XAC NHAN DIALOG KHI XOA ====================
+        // ==================== TEST 15: XÁC NHẬN DIALOG KHI XÓA ====================
 
         [Test]
         [Order(15)]
@@ -825,7 +860,8 @@ namespace SeleniumTests
 
             var dongCanXoa = TimMonAnTrenTatCaTrang(TenMonMoi);
             Assert.That(dongCanXoa, Is.Not.Null,
-                $"Mon an '{TenMonMoi}' phai ton tai de test confirm dialog.");
+                $"Món ăn '{TenMonMoi}' phải tồn tại để test confirm dialog.");
+            Pause();
 
             // Inject JS tu dong confirm = true
             ((IJavaScriptExecutor)_driver)
@@ -835,15 +871,16 @@ namespace SeleniumTests
             xoaBtn.Click();
 
             _wait.Until(d => !d.Url.Contains("/Delete/"));
+            Pause();
             NavigateToMonAn();
 
             Assert.That(TimMonAnTrenTatCaTrang(TenMonMoi), Is.Null,
-                "Khi xac nhan 'OK' trong dialog, mon an phai bi xoa.");
+                "Khi xác nhận 'OK' trong dialog, món ăn phải bị xóa.");
 
-            Console.WriteLine("[PASS] Xac nhan dialog xoa: Mon an da bi xoa sau khi bam OK.");
+            Console.WriteLine("[PASS] Xác nhận dialog xóa: Món ăn đã bị xóa sau khi bấm OK.");
         }
 
-        // ==================== TEST 16: DON DEP DU LIEU TEST ====================
+        // ==================== TEST 16: DỌN DẸP DỮ LIỆU TEST ====================
 
         [Test]
         [Order(16)]
@@ -853,11 +890,11 @@ namespace SeleniumTests
             XoaNeuTonTai(TenMonSua);
 
             Assert.That(TimMonAnTrenTatCaTrang(TenMonMoi), Is.Null,
-                $"'{TenMonMoi}' phai duoc don dep.");
+                $"'{TenMonMoi}' phải được dọn dẹp.");
             Assert.That(TimMonAnTrenTatCaTrang(TenMonSua), Is.Null,
-                $"'{TenMonSua}' phai duoc don dep.");
+                $"'{TenMonSua}' phải được dọn dẹp.");
 
-            Console.WriteLine("[PASS] Don dep du lieu test mon an thanh cong.");
+            Console.WriteLine("[PASS] Dọn dẹp dữ liệu test món ăn thành công.");
         }
     }
 }
