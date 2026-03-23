@@ -17,7 +17,8 @@ namespace SeleniumTests
         private const string LoginUrl      = BaseUrl + "/Dangnhap/Login";
         private const string AdminUsername = "admin";
         private const string AdminPassword = "admin123";
-        private const int    Delay         = 1000;
+        private const int    Short         = 500;
+        private const int    Medium        = 1000;
 
         // ==================== SETUP / TEARDOWN ====================
 
@@ -42,13 +43,13 @@ namespace SeleniumTests
 
         // ==================== HELPER METHODS ====================
 
-        private void Pause() => System.Threading.Thread.Sleep(Delay);
+        private void Sleep(int ms) => System.Threading.Thread.Sleep(ms);
 
         private void NavigateToLogin()
         {
             _driver.Navigate().GoToUrl(LoginUrl);
             _wait.Until(ExpectedConditions.ElementIsVisible(By.Name("username")));
-            Pause();
+            Sleep(Short);
         }
 
         private void FillLoginForm(string username, string password)
@@ -56,18 +57,18 @@ namespace SeleniumTests
             var usernameInput = _driver.FindElement(By.Name("username"));
             usernameInput.Clear();
             usernameInput.SendKeys(username);
-            Pause();
+            Sleep(Short);
 
             var passwordInput = _driver.FindElement(By.Name("password"));
             passwordInput.Clear();
             passwordInput.SendKeys(password);
-            Pause();
+            Sleep(Short);
         }
 
         private void ClickLoginButton()
         {
             _driver.FindElement(By.CssSelector("button[type='submit'].btn-primary")).Click();
-            Pause();
+            Sleep(Short);
         }
 
         // ==================== TEST 1: DANG NHAP THANH CONG ====================
@@ -96,7 +97,7 @@ namespace SeleniumTests
         {
             NavigateToLogin();
             ClickLoginButton();
-            System.Threading.Thread.Sleep(2000);
+            Sleep(Medium);
 
             Assert.That(_driver.Url, Does.Not.Contain("/DonHang"),
                 "Khi bo trong username va password khong duoc dang nhap vao trang quan tri.");
@@ -113,7 +114,7 @@ namespace SeleniumTests
             NavigateToLogin();
             FillLoginForm("", AdminPassword);
             ClickLoginButton();
-            System.Threading.Thread.Sleep(2000);
+            Sleep(Medium);
 
             Assert.That(_driver.Url, Does.Not.Contain("/DonHang"),
                 "Khi bo trong username khong duoc chuyen huong den trang Don Hang.");
@@ -130,7 +131,7 @@ namespace SeleniumTests
             NavigateToLogin();
             FillLoginForm(AdminUsername, "");
             ClickLoginButton();
-            System.Threading.Thread.Sleep(2000);
+            Sleep(Medium);
 
             Assert.That(_driver.Url, Does.Not.Contain("/DonHang"),
                 "Khi bo trong password khong duoc chuyen huong den trang Don Hang.");
@@ -150,7 +151,7 @@ namespace SeleniumTests
 
             var longWait = new WebDriverWait(_driver, TimeSpan.FromSeconds(15));
             longWait.Until(d => !d.Url.Contains("DonHang") || d.Url.Contains("Dangnhap"));
-            Pause();
+            Sleep(Short);
 
             Assert.That(_driver.Url, Does.Not.Contain("/DonHang"),
                 "Khi sai mat khau khong duoc chuyen huong den trang Don Hang.");
@@ -179,7 +180,7 @@ namespace SeleniumTests
             NavigateToLogin();
             FillLoginForm("username_khong_ton_tai", AdminPassword);
             ClickLoginButton();
-            System.Threading.Thread.Sleep(3000);
+            Sleep(Medium);
 
             Assert.That(_driver.Url, Does.Not.Contain("/DonHang"),
                 "Khi sai username khong duoc chuyen huong den trang Don Hang.");
@@ -244,7 +245,7 @@ namespace SeleniumTests
                 By.CssSelector("form[action*='Logout'] button[type='submit']")));
             ((IJavaScriptExecutor)_driver).ExecuteScript(
                 "arguments[0].scrollIntoView(true);", logoutBtn);
-            System.Threading.Thread.Sleep(300);
+            Sleep(Short);
             logoutBtn.Click();
 
             _wait.Until(d => !d.Url.Contains("/DonHang"));
@@ -253,7 +254,7 @@ namespace SeleniumTests
                 "Sau khi dang xuat khong duoc o trang Don Hang.");
 
             _driver.Navigate().GoToUrl(BaseUrl + "/DonHang");
-            System.Threading.Thread.Sleep(2000);
+            Sleep(Medium);
 
             bool redirectedToLogin = _driver.Url.Contains("Dangnhap") || _driver.Url.Contains("Login");
             bool showsLoginForm = false;

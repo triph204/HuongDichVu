@@ -21,7 +21,8 @@ namespace SeleniumTests
         private const string AdminPassword = "admin123";
         private const string SoBanMoi      = "9901";
         private const string SoBanSua      = "9902";
-        private const int    Delay         = 1000;
+        private const int    Short         = 500;
+        private const int    Medium        = 1000;
 
         // ==================== SETUP / TEARDOWN ====================
 
@@ -47,25 +48,25 @@ namespace SeleniumTests
 
         // ==================== HELPER METHODS ====================
 
-        private void Pause() => System.Threading.Thread.Sleep(Delay);
+        private void Sleep(int ms) => System.Threading.Thread.Sleep(ms);
 
         private void DangNhap()
         {
             _driver.Navigate().GoToUrl(LoginUrl);
             _wait.Until(ExpectedConditions.ElementIsVisible(By.Name("username")));
-            Pause();
+            Sleep(Short);
             _driver.FindElement(By.Name("username")).SendKeys(AdminUsername);
             _driver.FindElement(By.Name("password")).SendKeys(AdminPassword);
             _driver.FindElement(By.CssSelector("button[type='submit'].btn-primary")).Click();
             _wait.Until(ExpectedConditions.UrlContains("/DonHang"));
-            Pause();
+            Sleep(Short);
         }
 
         private void NavigateToBanAn()
         {
             _driver.Navigate().GoToUrl(BanAnUrl);
             _wait.Until(ExpectedConditions.ElementIsVisible(By.CssSelector(".card")));
-            Pause();
+            Sleep(Short);
         }
 
         private IWebElement? TimDongTheoSoBan(string soBan)
@@ -91,7 +92,7 @@ namespace SeleniumTests
                     "arguments[0].removeAttribute('onclick');", xoaBtn);
                 xoaBtn.Click();
                 _wait.Until(ExpectedConditions.ElementIsVisible(By.CssSelector(".card")));
-                Pause();
+                Sleep(Short);
             }
         }
 
@@ -99,14 +100,14 @@ namespace SeleniumTests
         {
             _driver.Navigate().GoToUrl(BanAnUrl + "/Create");
             _wait.Until(ExpectedConditions.ElementIsVisible(By.CssSelector("input[name='SoBan']")));
-            Pause();
+            Sleep(Short);
             var input = _driver.FindElement(By.CssSelector("input[name='SoBan']"));
             input.Clear();
             input.SendKeys(soBan);
-            Pause();
+            Sleep(Short);
             _driver.FindElement(By.CssSelector("button[type='submit'].btn-success")).Click();
             _wait.Until(d => !d.Url.Contains("/Create"));
-            Pause();
+            Sleep(Short);
             NavigateToBanAn();
         }
 
@@ -132,7 +133,7 @@ namespace SeleniumTests
             var headers = _driver.FindElements(By.CssSelector("table thead tr th"));
             Assert.That(headers.Count, Is.EqualTo(3), "Bang ban an phai co 3 cot.");
 
-            Pause();
+            Sleep(Short);
             Console.WriteLine($"[PASS] Truy cap menu Ban an thanh cong. URL: {_driver.Url}");
         }
 
@@ -162,7 +163,7 @@ namespace SeleniumTests
             Assert.That(rows[0].FindElement(By.CssSelector("a.btn-primary.btn-sm")).Displayed, Is.True, "Phai co nut Sua.");
             Assert.That(rows[0].FindElement(By.CssSelector("a.btn-danger.btn-sm")).Displayed, Is.True, "Phai co nut Xoa.");
 
-            Pause();
+            Sleep(Short);
             Console.WriteLine($"[PASS] Kiem tra trang thai ban an. So dong: {rows.Count}, Trang thai: '{badge.Text}'");
         }
 
@@ -181,7 +182,7 @@ namespace SeleniumTests
             Assert.That(themBtn.Displayed, Is.True, "Nut '+ Them Ban' phai hien thi.");
             themBtn.Click();
             _wait.Until(ExpectedConditions.UrlContains("/BanAn/Create"));
-            Pause();
+            Sleep(Medium);
 
             var soBanInput = _wait.Until(ExpectedConditions.ElementIsVisible(By.CssSelector("input[name='SoBan']")));
             Assert.That(soBanInput.Displayed, Is.True, "O nhap SoBan phai hien thi.");
@@ -192,16 +193,16 @@ namespace SeleniumTests
 
             soBanInput.Clear();
             soBanInput.SendKeys(SoBanMoi);
-            Pause();
+            Sleep(Short);
             _driver.FindElement(By.CssSelector("button[type='submit'].btn-success")).Click();
             _wait.Until(d => !d.Url.Contains("/Create"));
-            Pause();
+            Sleep(Medium);
 
             NavigateToBanAn();
             Assert.That(TimDongTheoSoBan(SoBanMoi), Is.Not.Null,
                 $"Ban an so '{SoBanMoi}' phai xuat hien trong bang sau khi them.");
 
-            Pause();
+            Sleep(Short);
             Console.WriteLine($"[PASS] Them ban an thanh cong: So ban {SoBanMoi}");
         }
 
@@ -213,10 +214,10 @@ namespace SeleniumTests
             _wait.Until(ExpectedConditions.ElementToBeClickable(
                 By.CssSelector("a[href='/BanAn/Create']"))).Click();
             _wait.Until(ExpectedConditions.UrlContains("/BanAn/Create"));
-            Pause();
+            Sleep(Short);
 
             _driver.FindElement(By.CssSelector("button[type='submit'].btn-success")).Click();
-            Pause();
+            Sleep(Short);
 
             var soBanInput = _driver.FindElement(By.CssSelector("input[name='SoBan']"));
             var isInvalid = (bool)((IJavaScriptExecutor)_driver)
@@ -224,7 +225,7 @@ namespace SeleniumTests
             Assert.That(isInvalid, Is.True, "Input SoBan phai bi HTML5 validation khi bo trong.");
             Assert.That(_driver.Url, Does.Contain("/Create"), "Phai o lai trang Create.");
 
-            Pause();
+            Sleep(Short);
             Console.WriteLine("[PASS] Bo trong so ban: Bi chan boi HTML5 required.");
         }
 
@@ -238,12 +239,12 @@ namespace SeleniumTests
             _wait.Until(ExpectedConditions.ElementToBeClickable(
                 By.CssSelector("a[href='/BanAn/Create']"))).Click();
             _wait.Until(ExpectedConditions.UrlContains("/BanAn/Create"));
-            Pause();
+            Sleep(Short);
 
             var soBanInput = _driver.FindElement(By.CssSelector("input[name='SoBan']"));
             soBanInput.Clear();
             soBanInput.SendKeys("3");
-            Pause();
+            Sleep(Short);
 
             var trangThaiSelect = new SelectElement(
                 _driver.FindElement(By.CssSelector("select[name='TrangThai']")));
@@ -252,7 +253,7 @@ namespace SeleniumTests
 
             _driver.FindElement(By.CssSelector("button[type='submit'].btn-success")).Click();
             _wait.Until(d => !d.Url.Contains("/Create"));
-            Pause();
+            Sleep(Short);
 
             NavigateToBanAn();
             var dongMoi = TimDongTheoSoBan("3");
@@ -268,7 +269,7 @@ namespace SeleniumTests
             }
 
             XoaNeuTonTai("3");
-            Pause();
+            Sleep(Short);
         }
 
         // ==================== NHOM 3: DROPDOWN TRANG THAI ====================
@@ -281,7 +282,7 @@ namespace SeleniumTests
             _wait.Until(ExpectedConditions.ElementToBeClickable(
                 By.CssSelector("a[href='/BanAn/Create']"))).Click();
             _wait.Until(ExpectedConditions.UrlContains("/BanAn/Create"));
-            Pause();
+            Sleep(Short);
 
             var trangThaiEl = _wait.Until(ExpectedConditions.ElementIsVisible(
                 By.CssSelector("select[name='TrangThai']")));
@@ -305,11 +306,11 @@ namespace SeleniumTests
             if (optDangSuDung != null)
             {
                 sel.SelectByText(optDangSuDung.Text);
-                Pause();
+                Sleep(Short);
                 Assert.That(sel.SelectedOption.Text, Is.EqualTo(optDangSuDung.Text));
             }
 
-            Pause();
+            Sleep(Short);
             Console.WriteLine($"[PASS] Dropdown TrangThai co {options.Count} option. Mac dinh: '{defaultValue}'");
         }
 
@@ -323,7 +324,7 @@ namespace SeleniumTests
             _wait.Until(ExpectedConditions.ElementToBeClickable(
                 By.CssSelector("a[href='/BanAn/Create']"))).Click();
             _wait.Until(ExpectedConditions.UrlContains("/BanAn/Create"));
-            Pause();
+            Sleep(Short);
 
             var ngayTaoInput = _wait.Until(ExpectedConditions.ElementIsVisible(
                 By.CssSelector("input[name='NgayTao']")));
@@ -340,7 +341,7 @@ namespace SeleniumTests
             Assert.That(isReadonly || ngayTaoInput.GetDomAttribute("readonly") != null, Is.True,
                 "Truong NgayTao phai la readonly khi them moi.");
 
-            Pause();
+            Sleep(Short);
             Console.WriteLine($"[PASS] Truong NgayTao mac dinh: '{ngayTaoValue}'");
         }
 
@@ -356,17 +357,17 @@ namespace SeleniumTests
             _wait.Until(ExpectedConditions.ElementToBeClickable(
                 By.CssSelector("a[href='/BanAn/Create']"))).Click();
             _wait.Until(ExpectedConditions.UrlContains("/BanAn/Create"));
-            Pause();
+            Sleep(Short);
 
             _driver.FindElement(By.CssSelector("input[name='SoBan']")).SendKeys("9999");
-            Pause();
+            Sleep(Short);
 
             var huyBtn = _wait.Until(ExpectedConditions.ElementToBeClickable(
                 By.CssSelector("a.btn-light[href='/BanAn']")));
             Assert.That(huyBtn.Displayed, Is.True, "Nut 'Huy' phai hien thi.");
             huyBtn.Click();
             _wait.Until(d => !d.Url.Contains("/Create"));
-            Pause();
+            Sleep(Short);
 
             Assert.That(_driver.Url, Does.Contain("/BanAn"));
             Assert.That(_driver.Url, Does.Not.Contain("/Create"));
@@ -375,7 +376,7 @@ namespace SeleniumTests
             int soDongSau = _driver.FindElements(By.CssSelector("table tbody tr")).Count;
             Assert.That(soDongSau, Is.EqualTo(soDongTruoc));
 
-            Pause();
+            Sleep(Short);
             Console.WriteLine("[PASS] Nut Huy trang Them: Ve danh sach, khong luu du lieu.");
         }
 
@@ -389,26 +390,26 @@ namespace SeleniumTests
             _wait.Until(ExpectedConditions.ElementToBeClickable(
                 By.CssSelector("a[href='/BanAn/Create']"))).Click();
             _wait.Until(ExpectedConditions.UrlContains("/BanAn/Create"));
-            Pause();
+            Sleep(Short);
 
             var soBanInput = _driver.FindElement(By.CssSelector("input[name='SoBan']"));
             soBanInput.Clear();
             soBanInput.SendKeys("@#$%");
-            Pause();
+            Sleep(Short);
 
             string actualValue = soBanInput.GetDomProperty("value") ?? "";
             Assert.That(actualValue.Length, Is.EqualTo(0),
                 "Truong type=number khong duoc chap nhan ky tu dac biet.");
 
             _driver.FindElement(By.CssSelector("button[type='submit'].btn-success")).Click();
-            Pause();
+            Sleep(Short);
 
             var isInvalid = (bool)((IJavaScriptExecutor)_driver)
                 .ExecuteScript("return !arguments[0].validity.valid;", soBanInput);
             Assert.That(isInvalid, Is.True, "Input type=number phai invalid khi nhap ky tu dac biet.");
             Assert.That(_driver.Url, Does.Contain("/Create"));
 
-            Pause();
+            Sleep(Short);
             Console.WriteLine("[PASS] Nhap ky tu dac biet: Bi chan boi input type=number.");
         }
 
@@ -422,18 +423,18 @@ namespace SeleniumTests
             _wait.Until(ExpectedConditions.ElementToBeClickable(
                 By.CssSelector("a[href='/BanAn/Create']"))).Click();
             _wait.Until(ExpectedConditions.UrlContains("/BanAn/Create"));
-            Pause();
+            Sleep(Short);
 
             var soBanInput = _driver.FindElement(By.CssSelector("input[name='SoBan']"));
             soBanInput.Clear();
             soBanInput.SendKeys(new string('1', 101));
-            Pause();
+            Sleep(Short);
 
             string actualValue = soBanInput.GetDomProperty("value") ?? "";
             Assert.That(actualValue.Length, Is.GreaterThan(0), "Phai co gia tri duoc nhap vao.");
 
             _driver.FindElement(By.CssSelector("button[type='submit'].btn-success")).Click();
-            Pause();
+            Sleep(Short);
 
             bool oLaiCreate = _driver.Url.Contains("/Create");
             Console.WriteLine(oLaiCreate
@@ -458,7 +459,7 @@ namespace SeleniumTests
 
             dongTest!.FindElement(By.CssSelector("a.btn-primary.btn-sm")).Click();
             _wait.Until(ExpectedConditions.UrlContains("/BanAn/Edit/"));
-            Pause();
+            Sleep(Short);
 
             Assert.That(_driver.Url, Does.Contain("/BanAn/Edit/"));
 
@@ -468,7 +469,7 @@ namespace SeleniumTests
             Assert.That(_driver.FindElement(By.CssSelector("button[type='submit'].btn-success")).Displayed, Is.True);
             Assert.That(_driver.FindElement(By.CssSelector("a.btn-light[href='/BanAn']")).Displayed, Is.True);
 
-            Pause();
+            Sleep(Short);
             Console.WriteLine($"[PASS] Bam nut Sua: Chuyen sang trang Edit, SoBan: '{SoBanMoi}'");
         }
 
@@ -483,22 +484,22 @@ namespace SeleniumTests
 
             dongTest!.FindElement(By.CssSelector("a.btn-primary.btn-sm")).Click();
             _wait.Until(ExpectedConditions.UrlContains("/BanAn/Edit/"));
-            Pause();
+            Sleep(Short);
 
             var soBanInput = _wait.Until(ExpectedConditions.ElementIsVisible(By.CssSelector("input[name='SoBan']")));
             soBanInput.Clear();
             soBanInput.SendKeys(SoBanSua);
-            Pause();
+            Sleep(Short);
 
             _driver.FindElement(By.CssSelector("button[type='submit'].btn-success")).Click();
             _wait.Until(d => !d.Url.Contains("/Edit/"));
-            Pause();
+            Sleep(Short);
 
             NavigateToBanAn();
             Assert.That(TimDongTheoSoBan(SoBanSua), Is.Not.Null, $"Ban so '{SoBanSua}' phai xuat hien sau khi sua.");
             Assert.That(TimDongTheoSoBan(SoBanMoi), Is.Null, $"So ban cu '{SoBanMoi}' khong duoc ton tai.");
 
-            Pause();
+            Sleep(Short);
             Console.WriteLine($"[PASS] Sua ban an thanh cong: {SoBanMoi} -> {SoBanSua}");
         }
 
@@ -524,12 +525,12 @@ namespace SeleniumTests
             ((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].removeAttribute('onclick');", xoaBtn);
             xoaBtn.Click();
             _wait.Until(ExpectedConditions.ElementIsVisible(By.CssSelector(".card")));
-            Pause();
+            Sleep(Short);
 
             NavigateToBanAn();
             Assert.That(TimDongTheoSoBan(SoBanMoi), Is.Null, $"Ban so '{SoBanMoi}' phai bi xoa.");
 
-            Pause();
+            Sleep(Short);
             Console.WriteLine($"[PASS] Xoa ban an thanh cong: So ban {SoBanMoi}");
         }
 
@@ -544,7 +545,7 @@ namespace SeleniumTests
 
             var dongCanXoa = TimDongTheoSoBan(SoBanMoi);
             Assert.That(dongCanXoa, Is.Not.Null);
-            Pause();
+            Sleep(Short);
 
             int soDongTruoc = _driver.FindElements(By.CssSelector("table tbody tr")).Count;
 
@@ -554,7 +555,7 @@ namespace SeleniumTests
             ((IJavaScriptExecutor)_driver).ExecuteScript("window.confirm = function(){ return true; };");
             xoaBtn.Click();
             _wait.Until(ExpectedConditions.ElementIsVisible(By.CssSelector(".card")));
-            Pause();
+            Sleep(Short);
 
             NavigateToBanAn();
             Assert.That(TimDongTheoSoBan(SoBanMoi), Is.Null, "Ban an phai bi xoa khi bam OK.");
@@ -562,7 +563,7 @@ namespace SeleniumTests
             int soDongSau = _driver.FindElements(By.CssSelector("table tbody tr")).Count;
             Assert.That(soDongSau, Is.EqualTo(soDongTruoc - 1));
 
-            Pause();
+            Sleep(Short);
             Console.WriteLine("[PASS] Dialog Xoa - OK: Ban an da bi xoa.");
         }
 
@@ -577,7 +578,7 @@ namespace SeleniumTests
 
             var dongCanXoa = TimDongTheoSoBan(SoBanMoi);
             Assert.That(dongCanXoa, Is.Not.Null);
-            Pause();
+            Sleep(Short);
 
             int soDongTruoc = _driver.FindElements(By.CssSelector("table tbody tr")).Count;
 
@@ -586,7 +587,7 @@ namespace SeleniumTests
 
             ((IJavaScriptExecutor)_driver).ExecuteScript("window.confirm = function(){ return false; };");
             xoaBtn.Click();
-            Pause();
+            Sleep(Short);
 
             Assert.That(_driver.Url, Does.Not.Contain("/Delete/"));
             Assert.That(_driver.Url, Does.Contain("/BanAn"));
@@ -595,7 +596,7 @@ namespace SeleniumTests
             int soDongSau = _driver.FindElements(By.CssSelector("table tbody tr")).Count;
             Assert.That(soDongSau, Is.EqualTo(soDongTruoc));
 
-            Pause();
+            Sleep(Short);
             Console.WriteLine($"[PASS] Dialog Xoa - Huy: Ban so '{SoBanMoi}' van con.");
         }
 
@@ -614,7 +615,7 @@ namespace SeleniumTests
             Assert.That(TimDongTheoSoBan(SoBanMoi), Is.Null);
             Assert.That(TimDongTheoSoBan(SoBanSua), Is.Null);
 
-            Pause();
+            Sleep(Short);
             Console.WriteLine("[PASS] Don dep du lieu test ban an thanh cong.");
         }
     }

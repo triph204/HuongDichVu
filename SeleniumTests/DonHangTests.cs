@@ -19,7 +19,8 @@ namespace SeleniumTests
         private const string LoginUrl      = BaseUrl + "/Dangnhap/Login";
         private const string AdminUsername = "admin";
         private const string AdminPassword = "admin123";
-        private const int    Delay         = 1000;
+        private const int    Short         = 500;
+        private const int    Medium        = 1000;
 
         // ==================== SETUP / TEARDOWN ====================
 
@@ -45,27 +46,27 @@ namespace SeleniumTests
 
         // ==================== HELPER METHODS ====================
 
-        private void Pause() => System.Threading.Thread.Sleep(Delay);
+        private void Sleep(int ms) => System.Threading.Thread.Sleep(ms);
 
         private void DangNhap()
         {
             _driver.Navigate().GoToUrl(LoginUrl);
             _wait.Until(ExpectedConditions.ElementIsVisible(By.Name("username")));
-            Pause();
+            Sleep(Short);
             _driver.FindElement(By.Name("username")).SendKeys(AdminUsername);
-            Pause();
+            Sleep(Short);
             _driver.FindElement(By.Name("password")).SendKeys(AdminPassword);
-            Pause();
+            Sleep(Short);
             _driver.FindElement(By.CssSelector("button[type='submit'].btn-primary")).Click();
             _wait.Until(ExpectedConditions.UrlContains("/DonHang"));
-            Pause();
+            Sleep(Short);
         }
 
         private void NavigateToDonHang(string trangThai = "tatca", string sortBy = "moinhat")
         {
             _driver.Navigate().GoToUrl($"{DonHangUrl}?trangThai={trangThai}&sortBy={sortBy}");
             _wait.Until(ExpectedConditions.ElementIsVisible(By.CssSelector(".status-tabs")));
-            Pause();
+            Sleep(Short);
         }
 
         private void ClickTab(string trangThaiParam)
@@ -73,7 +74,7 @@ namespace SeleniumTests
             _wait.Until(ExpectedConditions.ElementToBeClickable(
                 By.CssSelector($"a.status-tab[href*='trangThai={trangThaiParam}']"))).Click();
             _wait.Until(ExpectedConditions.ElementIsVisible(By.CssSelector(".status-tabs")));
-            Pause();
+            Sleep(Short);
         }
 
         private bool TabDangActive(string trangThaiParam)
@@ -105,7 +106,7 @@ namespace SeleniumTests
                 var sel = new SelectElement(d.FindElement(By.CssSelector("select[name='sortBy']")));
                 return sel.SelectedOption.GetDomProperty("value") == value;
             });
-            Pause();
+            Sleep(Short);
         }
 
         private void VaoChiTietDonDauTien()
@@ -113,7 +114,7 @@ namespace SeleniumTests
             _wait.Until(ExpectedConditions.ElementToBeClickable(
                 By.CssSelector("a.btn.btn-primary.btn-sm"))).Click();
             _wait.Until(ExpectedConditions.UrlContains("/DonHang/Details/"));
-            Pause();
+            Sleep(Short);
         }
 
         private void CapNhatTrangThai(string value)
@@ -121,10 +122,10 @@ namespace SeleniumTests
             var select = new SelectElement(_wait.Until(
                 ExpectedConditions.ElementIsVisible(By.CssSelector("select[name='trangThai']"))));
             select.SelectByValue(value);
-            Pause();
+            Sleep(Short);
             _driver.FindElement(By.CssSelector("button[type='submit'].btn-success")).Click();
             _wait.Until(ExpectedConditions.UrlContains("/DonHang/Details/"));
-            Pause();
+            Sleep(Short);
         }
 
         private void KiemTraPhanTrang(string tabLabel)
@@ -142,7 +143,7 @@ namespace SeleniumTests
             {
                 nextBtn.Click();
                 _wait.Until(d => d.Url.Contains("page=2"));
-                Pause();
+                Sleep(Short);
                 Assert.That(_driver.Url, Does.Contain("page=2"));
                 var activePage2 = _driver.FindElement(By.CssSelector(".pagination .page-item.active .page-link"));
                 Assert.That(activePage2.Text.Trim(), Is.EqualTo("2"));
@@ -168,7 +169,7 @@ namespace SeleniumTests
                 By.CssSelector("a.btn.btn-light[href='/DonHang']")));
             quayLaiBtn.Click();
             _wait.Until(ExpectedConditions.ElementIsVisible(By.CssSelector(".status-tabs")));
-            Pause();
+            Sleep(Short);
 
             Assert.That(_driver.Url, Does.Contain("/DonHang"));
             Assert.That(_driver.Url, Does.Not.Contain("/Details/"));

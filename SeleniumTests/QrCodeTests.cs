@@ -21,7 +21,8 @@ namespace SeleniumTests
         private const string AdminUsername = "admin";
         private const string AdminPassword = "admin123";
         private const string SoBanTest     = "9801";
-        private const int    Delay         = 1000;
+        private const int    Short         = 500;
+        private const int    Medium        = 1000;
 
         // ==================== SETUP / TEARDOWN ====================
 
@@ -47,27 +48,27 @@ namespace SeleniumTests
 
         // ==================== HELPER METHODS ====================
 
-        private void Pause() => System.Threading.Thread.Sleep(Delay);
+        private void Sleep(int ms) => System.Threading.Thread.Sleep(ms);
 
         private void DangNhap()
         {
             _driver.Navigate().GoToUrl(LoginUrl);
             _wait.Until(ExpectedConditions.ElementIsVisible(By.Name("username")));
-            Pause();
+            Sleep(Short);
             _driver.FindElement(By.Name("username")).SendKeys(AdminUsername);
-            Pause();
+            Sleep(Short);
             _driver.FindElement(By.Name("password")).SendKeys(AdminPassword);
-            Pause();
+            Sleep(Short);
             _driver.FindElement(By.CssSelector("button[type='submit'].btn-primary")).Click();
             _wait.Until(ExpectedConditions.UrlContains("/DonHang"));
-            Pause();
+            Sleep(Short);
         }
 
         private void NavigateToQrCode()
         {
             _driver.Navigate().GoToUrl(QrCodeUrl);
             _wait.Until(ExpectedConditions.ElementIsVisible(By.CssSelector(".page-header")));
-            Pause();
+            Sleep(Short);
         }
 
         private void VaoChiTietQrDauTien()
@@ -77,7 +78,7 @@ namespace SeleniumTests
                 By.CssSelector(".qr-actions a.btn-info.btn-sm")));
             chiTietBtn.Click();
             _wait.Until(ExpectedConditions.UrlContains("/QrCode/View/"));
-            Pause();
+            Sleep(Short);
         }
 
         private IWebElement? TimQrCardTheoSoBan(string soBan)
@@ -109,7 +110,7 @@ namespace SeleniumTests
                     "arguments[0].removeAttribute('onclick');", xoaBtn);
                 xoaBtn.Click();
                 _wait.Until(ExpectedConditions.ElementIsVisible(By.CssSelector(".card")));
-                Pause();
+                Sleep(Short);
             }
         }
 
@@ -138,7 +139,7 @@ namespace SeleniumTests
             Assert.That(coNoiDung, Is.True,
                 "Trang ph?i hi?n th? QR card ho?c thông báo r?ng.");
 
-            Pause();
+            Sleep(Short);
             int soCard = _driver.FindElements(By.CssSelector(".qr-card")).Count;
             Console.WriteLine($"[PASS] Xem danh sách mã QR Code. S? bàn hi?n th?: {soCard}. URL: {_driver.Url}");
         }
@@ -188,7 +189,7 @@ namespace SeleniumTests
             var taiXuong = card.FindElement(By.CssSelector(".qr-actions a.btn-success.btn-sm"));
             Assert.That(taiXuong.Displayed, Is.True, "Ph?i có nút 'T?i Xu?ng'.");
 
-            Pause();
+            Sleep(Short);
             Console.WriteLine($"[PASS] QR card ??y ?? thành ph?n. Bàn: '{tenBan.Text}', Tr?ng thái: '{badge.Text}'");
         }
 
@@ -227,8 +228,8 @@ namespace SeleniumTests
             Assert.That(href, Does.Contain("size=500x500"),
                 "Nút T?i Xu?ng trên card ph?i t?i file kích th??c 500x500.");
 
-            Pause();
-            Console.WriteLine($"[PASS] Nút T?i Xu?ng h?p l?. Bàn: '{tenBan}', File: '{downloadAttr}', Size: 500x500.");
+            Sleep(Short);
+            Console.WriteLine($"[PASS] Nut Tai Xuong hop le. Bàn: '{tenBan}', File: '{downloadAttr}', Size: 500x500.");
         }
 
         // ==================== NHOM 2: CHI TIET QR CODE ====================
@@ -283,11 +284,11 @@ namespace SeleniumTests
             Assert.That(qrUrl.Length, Is.GreaterThan(0),
                 "URL QR trong th? <code> không ???c r?ng.");
             Assert.That(qrUrl, Does.Contain("table="),
-                "URL QR ph?i ch?a tham s? 'table=' ?? nh?n di?n bàn.");
+                "URL QR ph?i ch?a tham s? 'table=' ?? nhãn di?n bàn.");
             Assert.That(qrUrl, Does.Contain(soBanTrenCard),
                 $"URL QR ph?i ch?a s? bàn '{soBanTrenCard}', th?c t?: '{qrUrl}'.");
 
-            Pause();
+            Sleep(Short);
             Console.WriteLine($"[PASS] Thong tin URL QR dung. Ban: {soBanTrenCard}, URL: '{qrUrl}'");
         }
 
@@ -336,8 +337,8 @@ namespace SeleniumTests
             Assert.That(downloadName, Does.Contain("Large"),
                 "Tên file 800x800 ph?i ch?a 'Large' ?? phân bi?t.");
 
-            Pause();
-            Console.WriteLine($"[PASS] Nút t?i QR 800x800 h?p l?. File: '{downloadName}'");
+            Sleep(Short);
+            Console.WriteLine($"[PASS] Nut tai QR 800x800 hop le. File: '{downloadName}'");
         }
 
         [Test]
@@ -384,8 +385,8 @@ namespace SeleniumTests
             Assert.That(downloadName, Does.Contain("HD"),
                 "Tên file 1200x1200 ph?i ch?a 'HD' ?? phân bi?t.");
 
-            Pause();
-            Console.WriteLine($"[PASS] Nút t?i QR 1200x1200 h?p l?. File: '{downloadName}'");
+            Sleep(Short);
+            Console.WriteLine($"[PASS] Nut tai QR 1200x1200 hop le. File: '{downloadName}'");
         }
 
         [Test]
@@ -411,21 +412,21 @@ namespace SeleniumTests
             Assert.That(inBtn.Text.Trim().Length, Is.GreaterThan(0),
                 "Nút In không ???c r?ng text.");
 
-            // Assert 3 - Ki?m tra onclick b?ng GetAttribute (tránh l?i GetDomProperty tr? dict)
-            string onclick = inBtn.GetAttribute("onclick") ?? "";
+            // Assert 3 - Ki?m tra onclick b?ng GetDomAttribute
+            string onclick = inBtn.GetDomAttribute("onclick") ?? "";
             Assert.That(onclick, Does.Contain("print"),
                 "Nút In ph?i có onclick g?i window.print().");
 
             // Act - Inject JS ?? ch?n h?p tho?i print (tránh treo test)
             ((IJavaScriptExecutor)_driver).ExecuteScript("window.print = function(){};");
             inBtn.Click();
-            Pause();
+            Sleep(Short);
 
             // Assert 4 - Trang không b? ?i?u h??ng sau khi click In
             Assert.That(_driver.Url, Does.Contain("/QrCode/View/"),
                 "Sau khi click In, v?n ph?i ? trang chi ti?t QR.");
 
-            Pause();
+            Sleep(Short);
             Console.WriteLine($"[PASS] Nut In QR Code hoat dong dung. onclick: '{onclick}'");
         }
 
@@ -472,7 +473,7 @@ namespace SeleniumTests
             Assert.That(note.Text.Trim().Length, Is.GreaterThan(0),
                 "N?i dung 'L?u ý' không ???c r?ng.");
 
-            Pause();
+            Sleep(Short);
             Console.WriteLine($"[PASS] Huong dan su dung day du. Tieu de: '{hdTitle.Text}', So buoc: {steps.Count}");
         }
 
@@ -507,7 +508,7 @@ namespace SeleniumTests
             // Act - Click Quay L?i
             quayLaiBtn.Click();
             _wait.Until(d => !d.Url.Contains("/View/"));
-            Pause();
+            Sleep(Short);
 
             // Assert 3 - URL v? ?úng trang danh sách
             Assert.That(_driver.Url, Does.Contain("/QrCode"),
@@ -521,7 +522,7 @@ namespace SeleniumTests
             Assert.That(soCardSau, Is.EqualTo(soCardTruoc),
                 "S? QR card sau khi Quay L?i ph?i b?ng v?i tr??c khi vào chi ti?t.");
 
-            Pause();
+            Sleep(Short);
             Console.WriteLine($"[PASS] Nut Quay Lai hoat dong dung. URL: {_driver.Url}, So card: {soCardSau}");
         }
 
@@ -541,7 +542,7 @@ namespace SeleniumTests
             Assert.That(card, Is.Null,
                 $"QR card c?a bàn {SoBanTest} ph?i ???c d?n d?p.");
 
-            Pause();
+            Sleep(Short);
             Console.WriteLine("[PASS] Don dep du lieu test QR thanh cong.");
         }
     }

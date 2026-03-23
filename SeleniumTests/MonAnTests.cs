@@ -25,7 +25,8 @@ namespace SeleniumTests
         private const string MoTaSua       = "Mo ta mon an da chinh sua boi Selenium";
         private const long   GiaMoi        = 99000;
         private const long   GiaSua        = 149000;
-        private const int    Delay         = 1000;
+        private const int    Short         = 500;
+        private const int    Medium        = 1000;
 
         // ==================== SETUP / TEARDOWN ====================
 
@@ -51,27 +52,27 @@ namespace SeleniumTests
 
         // ==================== HELPER METHODS ====================
 
-        private void Pause() => System.Threading.Thread.Sleep(Delay);
+        private void Sleep(int ms) => System.Threading.Thread.Sleep(ms);
 
         private void DangNhap()
         {
             _driver.Navigate().GoToUrl(LoginUrl);
             _wait.Until(ExpectedConditions.ElementIsVisible(By.Name("username")));
-            Pause();
+            Sleep(Short);
             _driver.FindElement(By.Name("username")).SendKeys(AdminUsername);
-            Pause();
+            Sleep(Short);
             _driver.FindElement(By.Name("password")).SendKeys(AdminPassword);
-            Pause();
+            Sleep(Short);
             _driver.FindElement(By.CssSelector("button[type='submit'].btn-primary")).Click();
             _wait.Until(ExpectedConditions.UrlContains("/DonHang"));
-            Pause();
+            Sleep(Short);
         }
 
         private void NavigateToMonAn()
         {
             _driver.Navigate().GoToUrl(MonAnUrl);
             _wait.Until(ExpectedConditions.ElementIsVisible(By.CssSelector(".card")));
-            Pause();
+            Sleep(Short);
         }
 
         private IWebElement? TimDongTheoTen(string tenMon)
@@ -114,7 +115,7 @@ namespace SeleniumTests
                     xoaBtn.Click();
                     _wait.Until(d => !d.Url.Contains("/Delete/") && d.Url.Contains("/MonAn"));
                     _wait.Until(ExpectedConditions.ElementIsVisible(By.CssSelector(".card")));
-                    Pause();
+                    Sleep(Short);
                     return;
                 }
                 var next = _driver.FindElements(By.CssSelector(".pagination .page-link"))
@@ -137,28 +138,28 @@ namespace SeleniumTests
         {
             _driver.Navigate().GoToUrl(MonAnUrl + "/Create");
             _wait.Until(ExpectedConditions.ElementIsVisible(By.CssSelector("input[name='TenMon']")));
-            Pause();
+            Sleep(Short);
 
             _driver.FindElement(By.CssSelector("input[name='TenMon']")).Clear();
             _driver.FindElement(By.CssSelector("input[name='TenMon']")).SendKeys(ten);
-            Pause();
+            Sleep(Short);
 
             string dmId = LayDanhMucDauTien();
             if (!string.IsNullOrEmpty(dmId))
                 new SelectElement(_driver.FindElement(By.CssSelector("select[name='DanhMucId']"))).SelectByValue(dmId);
-            Pause();
+            Sleep(Short);
 
             _driver.FindElement(By.CssSelector("input[name='Gia']")).Clear();
             _driver.FindElement(By.CssSelector("input[name='Gia']")).SendKeys(gia.ToString());
-            Pause();
+            Sleep(Short);
 
             _driver.FindElement(By.CssSelector("textarea[name='MoTa']")).Clear();
             _driver.FindElement(By.CssSelector("textarea[name='MoTa']")).SendKeys(moTa);
-            Pause();
+            Sleep(Short);
 
             _driver.FindElement(By.CssSelector("button[type='submit'].btn-success")).Click();
             _wait.Until(d => !d.Url.Contains("/Create"));
-            Pause();
+            Sleep(Short);
         }
 
         // ==================== NHOM 1: THEM MON AN ====================
@@ -176,7 +177,7 @@ namespace SeleniumTests
             Assert.That(themBtn.Displayed, Is.True);
             themBtn.Click();
             _wait.Until(ExpectedConditions.UrlContains("/MonAn/Create"));
-            Pause();
+            Sleep(Short);
 
             var tenInput = _wait.Until(ExpectedConditions.ElementIsVisible(By.CssSelector("input[name='TenMon']")));
             Assert.That(tenInput.Displayed, Is.True);
@@ -188,24 +189,24 @@ namespace SeleniumTests
 
             tenInput.Clear();
             tenInput.SendKeys(TenMonMoi);
-            Pause();
+            Sleep(Short);
 
             string dmId = LayDanhMucDauTien();
             Assert.That(dmId, Is.Not.Empty, "Phai co danh muc de chon.");
             new SelectElement(_driver.FindElement(By.CssSelector("select[name='DanhMucId']"))).SelectByValue(dmId);
-            Pause();
+            Sleep(Short);
 
             var giaInput = _driver.FindElement(By.CssSelector("input[name='Gia']"));
             giaInput.Clear();
             giaInput.SendKeys(GiaMoi.ToString());
-            Pause();
+            Sleep(Short);
 
             _driver.FindElement(By.CssSelector("textarea[name='MoTa']")).SendKeys(MoTaMoi);
-            Pause();
+            Sleep(Short);
 
             _driver.FindElement(By.CssSelector("button[type='submit'].btn-success")).Click();
             _wait.Until(d => !d.Url.Contains("/Create"));
-            Pause();
+            Sleep(Short);
 
             var dongMoi = TimMonAnTrenTatCaTrang(TenMonMoi);
             Assert.That(dongMoi, Is.Not.Null, $"Mon an '{TenMonMoi}' phai xuat hien sau khi them.");
@@ -213,7 +214,7 @@ namespace SeleniumTests
             string giaDigits = new string(dongMoi!.FindElements(By.TagName("td"))[2].Text.Where(char.IsDigit).ToArray());
             Assert.That(giaDigits, Does.Contain(GiaMoi.ToString()));
 
-            Pause();
+            Sleep(Short);
             Console.WriteLine($"[PASS] Them mon an thanh cong: '{TenMonMoi}'");
         }
 
@@ -229,18 +230,18 @@ namespace SeleniumTests
             _wait.Until(ExpectedConditions.ElementToBeClickable(
                 By.CssSelector("a[href='/MonAn/Create']"))).Click();
             _wait.Until(ExpectedConditions.UrlContains("/MonAn/Create"));
-            Pause();
+            Sleep(Short);
 
             _driver.FindElement(By.CssSelector("input[name='TenMon']")).SendKeys("Ten se bi huy khong luu");
-            Pause();
+            Sleep(Short);
             _driver.FindElement(By.CssSelector("input[name='Gia']")).SendKeys("50000");
-            Pause();
+            Sleep(Short);
 
             var huyBtn = _wait.Until(ExpectedConditions.ElementToBeClickable(
                 By.CssSelector("a.btn-light[href='/MonAn']")));
             huyBtn.Click();
             _wait.Until(d => !d.Url.Contains("/Create"));
-            Pause();
+            Sleep(Short);
 
             Assert.That(_driver.Url, Does.Contain("/MonAn"));
             Assert.That(_driver.Url, Does.Not.Contain("/Create"));
@@ -249,7 +250,7 @@ namespace SeleniumTests
             int soDongSau = _driver.FindElements(By.CssSelector("table tbody tr")).Count;
             Assert.That(soDongSau, Is.EqualTo(soDongTruoc));
 
-            Pause();
+            Sleep(Short);
             Console.WriteLine("[PASS] Nut Huy trang Them: Ve danh sach, khong luu du lieu.");
         }
 
@@ -275,7 +276,7 @@ namespace SeleniumTests
             string dmLabel = options[0].Text.Trim();
 
             new SelectElement(filterSelect).SelectByValue(dmId);
-            Pause();
+            Sleep(Short);
             _wait.Until(d => d.Url.Contains($"categoryId={dmId}"));
 
             Assert.That(_driver.Url, Does.Contain($"categoryId={dmId}"));
@@ -295,12 +296,12 @@ namespace SeleniumTests
             }
 
             new SelectElement(_driver.FindElement(By.CssSelector("select#categoryFilter"))).SelectByValue("0");
-            Pause();
+            Sleep(Short);
 
             var xoaLocSau = _driver.FindElements(By.CssSelector("a.btn-light.btn-sm[href='/MonAn']"));
             Assert.That(xoaLocSau.Count, Is.EqualTo(0), "Nut 'Xoa loc' phai bien mat.");
 
-            Pause();
+            Sleep(Short);
             Console.WriteLine($"[PASS] Loc theo danh muc '{dmLabel}' thanh cong.");
         }
 
@@ -319,7 +320,7 @@ namespace SeleniumTests
 
             dongTest!.FindElement(By.CssSelector("a.btn-primary")).Click();
             _wait.Until(ExpectedConditions.UrlContains("/MonAn/Edit/"));
-            Pause();
+            Sleep(Short);
 
             var tenInput = _wait.Until(ExpectedConditions.ElementIsVisible(By.CssSelector("input[name='TenMon']")));
             Assert.That(tenInput.GetDomProperty("value"), Is.EqualTo(TenMonMoi));
@@ -328,16 +329,16 @@ namespace SeleniumTests
 
             tenInput.Clear();
             tenInput.SendKeys(TenMonSua);
-            Pause();
+            Sleep(Short);
 
             var giaInput = _driver.FindElement(By.CssSelector("input[name='Gia']"));
             giaInput.Clear();
             giaInput.SendKeys(GiaSua.ToString());
-            Pause();
+            Sleep(Short);
 
             _driver.FindElement(By.CssSelector("button[type='submit'].btn-success")).Click();
             _wait.Until(d => !d.Url.Contains("/Edit/"));
-            Pause();
+            Sleep(Short);
 
             var dongSua = TimMonAnTrenTatCaTrang(TenMonSua);
             Assert.That(dongSua, Is.Not.Null, $"Mon an '{TenMonSua}' phai xuat hien sau khi sua.");
@@ -346,7 +347,7 @@ namespace SeleniumTests
             Assert.That(giaDigits, Does.Contain(GiaSua.ToString()));
             Assert.That(TimMonAnTrenTatCaTrang(TenMonMoi), Is.Null);
 
-            Pause();
+            Sleep(Short);
             Console.WriteLine($"[PASS] Sua mon an thanh cong: '{TenMonMoi}' -> '{TenMonSua}'");
         }
 
@@ -364,24 +365,24 @@ namespace SeleniumTests
 
             firstRow.FindElement(By.CssSelector("a.btn-primary")).Click();
             _wait.Until(ExpectedConditions.UrlContains("/MonAn/Edit/"));
-            Pause();
+            Sleep(Short);
 
             var tenInput = _wait.Until(ExpectedConditions.ElementIsVisible(By.CssSelector("input[name='TenMon']")));
             tenInput.Clear();
             tenInput.SendKeys("Ten tam thoi se khong luu");
-            Pause();
+            Sleep(Short);
 
             var huyBtn = _wait.Until(ExpectedConditions.ElementToBeClickable(
                 By.CssSelector("a.btn-light[href='/MonAn']")));
             huyBtn.Click();
             _wait.Until(d => !d.Url.Contains("/Edit/"));
-            Pause();
+            Sleep(Short);
 
             Assert.That(_driver.Url, Does.Contain("/MonAn"));
             Assert.That(TimDongTheoTen(tenGoc), Is.Not.Null, $"Ten goc '{tenGoc}' phai van con.");
             Assert.That(TimDongTheoTen("Ten tam thoi se khong luu"), Is.Null);
 
-            Pause();
+            Sleep(Short);
             Console.WriteLine($"[PASS] Nut Huy trang Sua: Ten goc '{tenGoc}' van giu nguyen.");
         }
 
@@ -404,7 +405,7 @@ namespace SeleniumTests
             ((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].removeAttribute('onclick');", xoaBtn);
             xoaBtn.Click();
             _wait.Until(d => !d.Url.Contains("/Delete/"));
-            Pause();
+            Sleep(Short);
 
             NavigateToMonAn();
             Assert.That(TimMonAnTrenTatCaTrang(TenMonMoi), Is.Null);
@@ -412,7 +413,7 @@ namespace SeleniumTests
             int soDongSau = _driver.FindElements(By.CssSelector("table tbody tr")).Count;
             Assert.That(soDongSau, Is.EqualTo(soDongTruoc - 1));
 
-            Pause();
+            Sleep(Short);
             Console.WriteLine($"[PASS] Xoa mon an thanh cong: '{TenMonMoi}'");
         }
 
@@ -437,7 +438,7 @@ namespace SeleniumTests
             ((IJavaScriptExecutor)_driver).ExecuteScript("window.confirm = function(){ return true; };");
             xoaBtn.Click();
             _wait.Until(d => !d.Url.Contains("/Delete/"));
-            Pause();
+            Sleep(Short);
 
             NavigateToMonAn();
             Assert.That(TimMonAnTrenTatCaTrang(TenMonMoi), Is.Null);
@@ -445,7 +446,7 @@ namespace SeleniumTests
             int soDongSau = _driver.FindElements(By.CssSelector("table tbody tr")).Count;
             Assert.That(soDongSau, Is.EqualTo(soDongTruoc - 1));
 
-            Pause();
+            Sleep(Short);
             Console.WriteLine("[PASS] Dialog Xoa - OK: Mon an da bi xoa.");
         }
 
@@ -469,7 +470,7 @@ namespace SeleniumTests
 
             ((IJavaScriptExecutor)_driver).ExecuteScript("window.confirm = function(){ return false; };");
             xoaBtn.Click();
-            Pause();
+            Sleep(Short);
 
             Assert.That(_driver.Url, Does.Not.Contain("/Delete/"));
             Assert.That(_driver.Url, Does.Contain("/MonAn"));
@@ -478,7 +479,7 @@ namespace SeleniumTests
             int soDongSau = _driver.FindElements(By.CssSelector("table tbody tr")).Count;
             Assert.That(soDongSau, Is.EqualTo(soDongTruoc));
 
-            Pause();
+            Sleep(Short);
             Console.WriteLine($"[PASS] Dialog Xoa - Huy: Mon an '{TenMonMoi}' van con.");
         }
 
@@ -500,20 +501,20 @@ namespace SeleniumTests
 
             dongTest.FindElement(By.CssSelector("a.btn-primary")).Click();
             _wait.Until(ExpectedConditions.UrlContains("/MonAn/Edit/"));
-            Pause();
+            Sleep(Short);
 
             var coSanCheck = _wait.Until(ExpectedConditions.ElementIsVisible(By.CssSelector("input[name='CoSan']")));
             Assert.That(coSanCheck.Displayed, Is.True);
 
             bool isCheckedTruoc = coSanCheck.Selected;
             coSanCheck.Click();
-            Pause();
+            Sleep(Short);
             bool isCheckedSau = coSanCheck.Selected;
             Assert.That(isCheckedSau, Is.Not.EqualTo(isCheckedTruoc));
 
             _driver.FindElement(By.CssSelector("button[type='submit'].btn-success")).Click();
             _wait.Until(d => !d.Url.Contains("/Edit/"));
-            Pause();
+            Sleep(Short);
 
             var dongSauSua = TimMonAnTrenTatCaTrang(TenMonMoi);
             Assert.That(dongSauSua, Is.Not.Null);
@@ -526,7 +527,7 @@ namespace SeleniumTests
             else
                 Assert.That(classSau, Does.Contain("badge-danger"));
 
-            Pause();
+            Sleep(Short);
             Console.WriteLine($"[PASS] Cap nhat CoSan: {coSanTruoc} -> {isCheckedSau}");
         }
 
@@ -542,7 +543,7 @@ namespace SeleniumTests
             Assert.That(TimMonAnTrenTatCaTrang(TenMonMoi), Is.Null);
             Assert.That(TimMonAnTrenTatCaTrang(TenMonSua), Is.Null);
 
-            Pause();
+            Sleep(Short);
             Console.WriteLine("[PASS] Don dep du lieu test mon an thanh cong.");
         }
     }
